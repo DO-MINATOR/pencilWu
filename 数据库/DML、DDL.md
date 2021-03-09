@@ -199,4 +199,135 @@ CREATE TABLE copy4 SELECT id,au_name
 FROM author WHERE 0;
 ```
 
-da
+### 约束
+
+也属于DDL语言，类似于字段类型，也是用于限制表中的数据。
+
+#### **六大约束：**
+
+- NOT NULL：非空
+- DEFAULT：默认值
+- PRIMARY KEY：主键，默认非空、唯一
+- UNIQUE：唯一，只能有一行数据存在空值
+- CHECH：检查约束（MySQL中无效，推荐使用enum、set代替）
+- FOREIGN KEY：外键，从表的外键值只能来子主表的关联列（一般为主键、唯一键）
+
+约束的创建时机为**创建表**和**修改表**
+约束的创建位置为**列级约束**和**表级约束**
+
+1、创建表时创建约束的语法
+
+```mysql
+CREATE TABLE 表名{
+	字段名 字段类型 列级约束,
+	字段名 字段类型,
+	表级约束
+};
+```
+
+```mysql
+列级约束
+CREATE TABLE stuinfo(
+	id INT PRIMARY KEY,#主键
+	stuName VARCHAR(20) NOT NULL UNIQUE,#非空
+	gender enum('男','女'),#代替check
+	seat INT UNIQUE,#唯一
+	age INT DEFAULT 18,#默认约束
+	majorId INT REFERENCES major(id)#外键
+);
+
+CREATE TABLE major(
+	id INT PRIMARY KEY,
+	majorName VARCHAR(20)
+);
+
+#查看stuinfo中的所有键，包括主键、外键、唯一
+SHOW INDEX FROM stuinfo;
+
+表级约束
+CREATE TABLE stuinfo(
+	id INT,
+	stuname VARCHAR(20),
+	gender CHAR(1),
+	seat INT,
+	age INT,
+	majorid INT,
+	
+	CONSTRAINT pk PRIMARY KEY(id),#主键
+	CONSTRAINT uq UNIQUE(seat),#唯一键
+	CONSTRAINT ck CHECK(gender ='男' OR gender  = '女'),#检查
+	CONSTRAINT fk_stuinfo_major FOREIGN KEY(majorid) REFERENCES major(id)#外键	
+);
+```
+
+2、修改表时修改约束的语法
+
+```mysql
+1、修改列级约束
+alter table 表名 modify column 字段名 字段类型 新约束;
+
+2、添加表级约束
+alter table 表名 add  PRIMARY KEY/INDEX/FOREIGN KEY#(三大键)
+
+3、删除表级约束
+alter table 表名 drop PRIMARY KEY/INDEX/FOREIGN KEY#(三大键)
+```
+
+```mysql
+#1.添加非空约束
+ALTER TABLE stuinfo MODIFY COLUMN stuname VARCHAR(20)  NOT NULL;
+
+#2.添加默认约束
+ALTER TABLE stuinfo MODIFY COLUMN age INT DEFAULT 18;
+
+#3.添加主键
+    #①列级约束
+    ALTER TABLE stuinfo MODIFY COLUMN id INT PRIMARY KEY;
+    #②表级约束
+    ALTER TABLE stuinfo ADD PRIMARY KEY(id);
+
+#4.添加唯一
+    #①列级约束
+    ALTER TABLE stuinfo MODIFY COLUMN seat INT UNIQUE;
+    #②表级约束
+    ALTER TABLE stuinfo ADD UNIQUE(seat);
+
+#5.添加外键
+ALTER TABLE stuinfo ADD CONSTRAINT fk_stuinfo_major FOREIGN KEY(majorid) REFERENCES major(id); 
+
+#6.删除非空约束
+ALTER TABLE stuinfo MODIFY COLUMN stuname VARCHAR(20) NULL;
+
+#7.删除默认约束
+ALTER TABLE stuinfo MODIFY COLUMN age INT ;
+
+#8.删除主键
+ALTER TABLE stuinfo DROP PRIMARY KEY;
+
+#9.删除唯一
+ALTER TABLE stuinfo DROP INDEX seat;
+
+#10.删除外键
+ALTER TABLE stuinfo DROP FOREIGN KEY fk_stuinfo_major;
+```
+
+#### 自增长列
+
+AUTO INCREMENT是除了六大约束外的另一个重要约束，可以不用手动设置该值，系统默认往后自增
+
+- 一个表至多有一个自增长列
+- 自增长列必须为一个key(主键、唯一键)
+
+```mysql
+#一、创建表时设置自增长列
+CREATE TABLE tab_identity(
+	id INT  ,
+	NAME FLOAT UNIQUE AUTO_INCREMENT,
+	seat INT 
+) TRUNCATE TABLE tab_identity;
+
+INSERT INTO tab_identity(id,NAME) VALUES(NULL,'john');
+
+INSERT INTO tab_identity(NAME) VALUES('lucy');
+```
+
