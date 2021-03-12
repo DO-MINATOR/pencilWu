@@ -49,11 +49,15 @@ select database();
 
 #新建一个数据表
 create table math(
-id int,
-name varchar(20));
+	id int,
+	name varchar(20)
+);
 
 #查看表的结构
 desc math;
+
+#查看创建细节
+show create table math;
 
 #查看表中的所有记录
 select * from math;
@@ -69,6 +73,7 @@ delete from math where id=1;
 
 #删除数据表
 drop table math;
+truncate table math;
 ```
 
 ### MySQL规范

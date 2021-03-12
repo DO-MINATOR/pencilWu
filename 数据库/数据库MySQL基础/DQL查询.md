@@ -19,14 +19,10 @@ SELECT last_name,salary,email FROM employees;
 SELECT * FROM employees;
 
 #4.起别名
-/*
-1.便于理解
-2.如果要查询的字段有重名的情况,使用别名区分
-*/
 #方式一:使用AS
 SELECT last_name AS 姓,first_name AS 名 FROM employees;
 
-#方式二:使用空格
+#方式二:使用空（推荐）
 SELECT last_name 姓,first_name 名 FROM employees;
 
 #案例:查询salary,结果显示 out put
@@ -37,7 +33,7 @@ SELECT salary AS "out put" FROM employees;
 SELECT DISTINCT department_id FROM employees;
 
 #6.+号的作用
-#案例:查询员工的名和姓,并显示为姓名
+#【错误】查询员工的名和姓,并显示为姓名
 /*
 select 100+90; 两个操作数都为数值型,做加法运算
 select '123'+90;其中一方为字符型,试图将字符型数值转换为数值型
@@ -46,13 +42,13 @@ select null+0; 只要其中一方为null,则结果肯定为null.
 */
 SELECT last_name+first_name AS 姓名 FROM employees; ×
 
-#7.【补充】concat函数 
+#7.【正确】concat函数 
 /*
 功能：拼接字符
 select concat(字符1，字符2，字符3,...);
 */
-SELECT CONCAT('a','b','c') AS 结果 FROM employees;
-SELECT CONCAT(last_name,first_name) AS 姓名 FROM employees;
+SELECT CONCAT('a','b','c') 结果 FROM employees;
+SELECT CONCAT(last_name,first_name) 姓名 FROM employees;
 
 #8.【补充】ifnull函数
 #功能：判断某字段或表达式是否为null，如果为null 返回指定的值，否则返回原本的值
@@ -85,11 +81,8 @@ SELECT IFNULL(commission_pct,0) FROM employees;
 
    is null
 
-**注意：**IFNULL(column, **)函数判断如果column列为null，则自动替换为\*\*
-
 ```mysql
 #一.按条件表达式筛选
-
 #案例1:查询工资>12000的员工信息
 SELECT * FROM employees WHERE salary>12000;
 
@@ -97,18 +90,14 @@ SELECT * FROM employees WHERE salary>12000;
 SELECT last_name,department_id FROM employees WHERE department_id <> 90;
 
 #二、按逻辑表达式筛选
-
 #案例1:查询工资z在10000到20000之间的员工名、工资及奖金
 SELECT last_name,salary,commission_pct FROM employees WHERE salary>=10000 AND salary<=20000;
 
 #案例2:查询部门编号不是在90-110之间,或者工资高于15000的员工信息
 SELECT * FROM employees WHERE department_id <90 OR department_id>110 OR salary>15000;
 
-
 #三、模糊查询
-
 #1.like适用于字符型和数值型
-
 #案例1:查询员工名中包含字符a的员工信息
 SELECT * FROM employees WHERE last_name LIKE '%a%';
 
@@ -119,17 +108,12 @@ SELECT last_name,salary FROM employees WHERE last_name LIKE '__b_a%';
 SELECT last_name FROM employees WHERE last_name LIKE '_\_%';
 
 #2.between and
-
 #案例1:查询员工编号在100到120之间的员工信息
-SELECT * FROM employees WHERE employee_id>=100 AND employee_id<=120;
-
 SELECT * FROM employees WHERE employee_id BETWEEN 100 AND 120;
 
 #3.in
 #案例1:查询员工的工种编号是IT_PROG、AD_VP、AD_PRES中的一个员工名和工种编号
-
 SELECT last_name,job_id FROM employees WHERE job_id='IT_PROG' OR job_id='AD_PRES' OR job_id='AD_VP';
-
 SELECT last_name,job_id FROM employees WHERE job_id IN('IT_PROG','AD_PRES','AD_VP');
 
 #4.is null
@@ -141,7 +125,7 @@ is null 或 is not null 可以判断null值
 SELECT last_name,commission_pct FROM employees WHERE commission_pct IS NULL;
 SELECT last_name,commission_pct FROM employees WHERE commission_pct IS NOT NULL;
 
-#安全等于<=>
+#安全等于<=>,这个相比=或<>可以判断为null的情况
 #案例1:查询没有奖金的员工名和奖金率
 SELECT last_name,commission_pct FROM employees WHERE commission_pct <=> NULL;
 #案例2:查询工资为12000的员工信息
@@ -200,8 +184,6 @@ ORDER BY salary ASC,employee_id DESC;
 SELECT LENGTH('subei');
 SELECT LENGTH('鬼谷子qwe');
 
-SHOW VARIABLES LIKE '%char%';#显示字符集为utf8，汉字为3字节
-
 #2.concat 拼接字符串
 SELECT CONCAT(last_name,'_',first_name) 姓名 FROM employees;
 
@@ -213,9 +195,8 @@ SELECT LOWER('ton');
 #示例：将姓变大写，名变小写，然后拼接
 SELECT CONCAT(UPPER(last_name),LOWER(first_name)) 姓名 FROM employees;
 
-#4.substr、substring
+#4.substr
 #注意:索引从1开始
-
 #截取从指定所有处后面的所以字符
 SELECT SUBSTR('吴刚伐桂在天上',4) out_put;
 
@@ -345,7 +326,7 @@ FROM employees;
 
 #### 分组函数
 
-统计使用，又称作统计函数、组函数
+又称作统计函数、组函数
 
 sum 求和、avg 平均值、max 最大值、min最小值count 计算个数，且可以和distinct函数搭配实现去重操作，count(字段)统计该字段非空的个数，count(*)统计所有存在的行数
 
@@ -364,7 +345,7 @@ SELECT MAX(hiredate),MIN(hiredate) FROM employees;
 SELECT COUNT(commission_pct) FROM employees;
 SELECT COUNT(last_name) FROM employees;
 
-#3.是否忽略null
+#3.是否忽略null（是）
 SELECT 
     SUM(commission_pct),
     AVG(commission_pct),
@@ -426,37 +407,21 @@ GROUP BY manager_id;
 
 #添加复杂的筛选条件
 #案例1:查询哪个部门的员工个数>2
-#1.查询每个部门的员工个数
-SELECT COUNT(*),department_id FROM employees
-GROUP BY department_id;
-
-#2.根据1的结果进行筛选，查询哪个部门的员工个数大于2
-SELECT COUNT(*),department_id FROM employees
-GROUP BY department_id HAVING COUNT(*)>2;
+SELECT COUNT(*) sum,department_id FROM employees
+GROUP BY department_id HAVING sum >2;
 
 #案例2:查询每个工种有奖金的员工的最高工资>12000的工种编号和最高工资 
-#1.查询每个工种有奖金的员工的最高工资 
-SELECT MAX(salary),job_id FROM employees 
-WHERE commission_pct IS NOT NULL GROUP BY job_id; 
-
-#2.根据结果继续筛选，最高工资>12000 
 SELECT MAX(salary), job_id FROM employees 
 WHERE commission_pct IS NOT NULL GROUP BY job_id 
 HAVING MAX(salary)>12000; 
 
 #按表达式或函数分组
 #案例:按员工姓名的长度分组,查询每一组的员工个数,筛选员工个数>5
-#1.查询每个长度的员工个数 
-SELECT COUNT(*),LENGTH(last_name) len_name 
-FROM employees GROUP BY LENGTH(last_name); 
-
-#2.添加筛选条件
 SELECT COUNT(*) c,LENGTH(last_name) len_name 
 FROM employees GROUP BY len_name HAVING c>5;
 
 #按多个字段查询
 #案例:查询每个部门每个工种的员工的平均工资
-
 SELECT AVG(salary),department_id,job_id
 FROM employees GROUP BY department_id,job_id;
 
@@ -469,7 +434,7 @@ ORDER BY AVG(salary) DESC;
 
 ### 连接查询
 
-又称多表查询，当待查询字段来自多个表时，就用该种方式，笛卡尔乘积现象，是因为没有连接条件。
+又称多表查询，当待查询字段来自多个表时，就用该种方式，笛卡尔乘积现象，交叉连接。
 
 ```
 内连接(inner join)：
@@ -482,105 +447,6 @@ ORDER BY AVG(salary) DESC;
 	全外连接(full join)
 交叉连接：(cross join)
 ```
-#### sql92(不支持外连接)
-
-```mysql
-#等值连接
-/*
-1.多表等值连接的结果为多表的交集部分
-2.n表连接，至少需要n-1个连接条件
-3.多表的顺序没有要求
-4.一般需要为表起别名
-5.可以搭配前面介绍的所有子句使用，比如排序、分组、筛选
-*/
-
-#案例1：查询女神名和对应的男神名
-SELECT NAME,boyName FROM boys,beauty
-WHERE beauty.boyfriend_id = boys.id;
-
-#案例2：查询员工名和对应的部门名
-SELECT last_name,department_name 
-FROM employees,departments
-WHERE employees.`department_id`=departments.`department_id`;
-
-#2、为表起别名
-/*
-1.提高语句的简洁度
-2.区分多个重名的字段
-*/
-#查询员工名、工种号、工种名
-SELECT e.last_name,e.job_id,j.job_title
-FROM employees  e,jobs j
-WHERE e.`job_id`=j.`job_id`;
-
-#3、两个表的顺序可以调换
-#查询员工名、工种号、工种名
-SELECT e.last_name,e.job_id,j.job_title
-FROM jobs j,employees e
-WHERE e.`job_id`=j.`job_id`;
-
-#4、可以加筛选
-#案例：查询有奖金的员工名、部门名
-SELECT last_name,department_name,commission_pct
-FROM employees e,departments d
-WHERE e.`department_id`=d.`department_id`
-AND e.`commission_pct` IS NOT NULL;
-
-#案例2：查询城市名中第二个字符为o的部门名和城市名
-SELECT department_name,city
-FROM departments d,locations l
-WHERE d.`location_id` = l.`location_id`
-AND city LIKE '_o%';
-
-#5、可以加分组
-#案例1：查询每个城市的部门个数
-SELECT COUNT(*) 个数,city
-FROM departments d,locations l
-WHERE d.`location_id`=l.`location_id`
-GROUP BY city;
-
-#案例2：查询有奖金的每个部门的部门名和部门的领导编号和该部门的最低工资
-SELECT department_name,d.`manager_id`,MIN(salary)
-FROM departments d,employees e
-WHERE d.`department_id`=e.`department_id`
-AND commission_pct IS NOT NULL
-GROUP BY department_name;
-
-#6、可以加排序
-#案例：查询每个工种的工种名和员工的个数，并且按员工个数降序
-SELECT job_title,COUNT(*)
-FROM employees e,jobs j
-WHERE e.`job_id`=j.`job_id`
-GROUP BY job_title
-ORDER BY COUNT(*) DESC;
-
-#7、可以实现三表连接？
-#案例：查询员工名、部门名和所在的城市
-SELECT last_name,department_name,city
-FROM employees e,departments d,locations l
-WHERE e.`department_id`=d.`department_id`
-AND d.`location_id`=l.`location_id`
-AND city LIKE 's%'
-ORDER BY department_name DESC;
-```
-
-```mysql
-#非等值连接，只要不是=做查询条件的就是非等值连接
-#案例1：查询员工的工资和工资级别
-SELECT salary,grade_level
-FROM employees e,job_grades g
-WHERE salary BETWEEN g.`lowest_sal` AND g.`highest_sal`
-AND g.`grade_level`='A';
-```
-
-```mysql
-#3、自连接，单个表自身做（非）等值连接
-#案例：查询 员工名和上级的名称
-SELECT e.employee_id,e.last_name,m.employee_id,m.last_name
-FROM employees e,employees m
-WHERE e.`manager_id`=m.`employee_id`;
-```
-
 #### sql99
 
 ```mysql
@@ -596,7 +462,6 @@ on 连接条件;
 ①添加排序、分组、筛选
 ②inner可以省略
 ③筛选条件放在where后面，连接条件放在on后面，提高分离性，便于阅读
-④inner join连接和sql92语法中的等值连接效果是一样的，都是查询多表的交集
 */
 等值连接
 #查询员工名、部门名
@@ -705,14 +570,7 @@ WHERE salary>(
 	WHERE last_name = 'Abel'
 );
 
-#案例2：返回job_id与141号员工相同，salary比143号员工多的员工姓名，job_id和工
-#①查询141号员工的job_id
-SELECT job_id FROM employees
-WHERE employee_id = 141;
-#②查询143号员工的salary
-SELECT salary FROM employees
-WHERE employee_id = 143;
-#③查询员工的姓名，job_id 和工资，要求job_id=①并且salary>②
+#案例2：返回job_id与141号员工相同，salary比143号员工多的员工姓名，job_id和工资
 SELECT last_name,job_id,salary
 FROM employees
 WHERE job_id = (
@@ -726,9 +584,6 @@ WHERE job_id = (
 );
 
 #案例3：返回公司工资最少的员工的last_name,job_id和salary
-#①查询公司的最低工资
-SELECT MIN(salary) FROM employees;
-#②查询last_name,job_id和salary，要求salary=①
 SELECT last_name,job_id,salary
 FROM employees
 WHERE salary=(
@@ -759,11 +614,6 @@ HAVING MIN(salary)>(
 
 列子查询
 #案例1：返回location_id是1400或1700的部门中的所有员工姓名
-#①查询location_id是1400或1700的部门编号
-SELECT DISTINCT department_id
-FROM departments
-WHERE location_id IN(1400,1700);
-#②查询员工姓名，要求部门号是①列表中的某一个
 SELECT last_name
 FROM employees
 WHERE department_id in(
@@ -772,11 +622,8 @@ WHERE department_id in(
 	WHERE location_id IN(1400,1700)
 );
 
-
 #案例2：返回其它工种中比job_id为‘IT_PROG’工种任一工资低的员工的员工号、姓名、job_id 以及salary
-
 #①查询job_id为‘IT_PROG’部门任一工资
-
 SELECT DISTINCT salary FROM employees
 WHERE job_id = 'IT_PROG';
 
@@ -858,7 +705,6 @@ FROM employees GROUP BY department_id;
 SELECT * FROM job_grades;
 
 #②连接①的结果集和job_grades表，筛选条件平均工资 between lowest_sal and highest_sal
-
 SELECT  ag_dep.*,g.`grade_level`
 FROM (
 	SELECT AVG(salary) ag,department_id
@@ -922,6 +768,7 @@ WHERE NOT EXISTS(
 
 当待查询数据较多，需要分页显示时，可以使用分页查询，查询出部分数据，减小IO
 
+```mysql
 select 查询列表
 from 表
 [join type] join 表2
@@ -931,6 +778,8 @@ group by 分组字段
 having 分组后的筛选
 order by 排序的字段】
 limit [offset], size;
+```
+
 注意
 offset要显示条目的起始索引（起始索引从0开始）
 size 要显示的条目个数`

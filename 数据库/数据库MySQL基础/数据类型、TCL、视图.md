@@ -48,7 +48,7 @@ CREATE TABLE tab_float (f1 FLOAT, f2 DOUBLE, f3 DECIMAL) ;
 
 ### TCL（事务）
 
-事务控制语句，事务指一个或一组SQL语句组合为一个单元，这个单元要么全部执行，要么全都不执行。针对DQL、DML语句生效，DDL用不着使用TCL控制
+事务控制语句，事务指一个或一组SQL语句组合为一个单元，这个单元要么全部执行，要么全都不执行。针对DQL、DML语句生效，DDL无法通过事务控制
 
 ```mysql
 /*案例：转账
