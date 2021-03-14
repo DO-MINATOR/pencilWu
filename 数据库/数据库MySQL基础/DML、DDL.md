@@ -209,7 +209,7 @@ FROM author WHERE 0;
 - DEFAULT：默认值
 - PRIMARY KEY：主键，默认非空、唯一
 - UNIQUE：唯一，只能有一行数据存在空值
-- CHECH：检查约束（MySQL中无效，推荐使用enum、set代替）
+- CHECK：检查约束（MySQL中无效，推荐使用enum、set代替）
 - FOREIGN KEY：外键，从表的外键值只能来子主表的关联列（一般为主键、唯一键）
 
 约束的创建时机为**创建表**和**修改表**
@@ -321,13 +321,11 @@ AUTO INCREMENT是除了六大约束外的另一个重要约束，可以不用手
 ```mysql
 #一、创建表时设置自增长列
 CREATE TABLE tab_identity(
-	id INT  ,
-	NAME FLOAT UNIQUE AUTO_INCREMENT,
-	seat INT 
-) TRUNCATE TABLE tab_identity;
-
+	id INT,
+	NAME VARCHAR(20),
+	seat INT UNIQUE AUTO_INCREMENT
+) S
 INSERT INTO tab_identity(id,NAME) VALUES(NULL,'john');
-
 INSERT INTO tab_identity(NAME) VALUES('lucy');
 ```
 

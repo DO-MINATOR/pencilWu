@@ -54,9 +54,9 @@ CREATE TABLE tab_float (f1 FLOAT, f2 DOUBLE, f3 DECIMAL) ;
 /*案例：转账
 张三丰		1000
 郭襄		1000*/
-update 表 set 张三丰的余额=500 where name='张三丰'
+update 表 set 张三丰的余额=张三丰的余额-500 where name='张三丰'
 意外
-update 表 set 郭襄的余额=1500 where name='郭襄'
+update 表 set 郭襄的余额=郭襄的余额+500 where name='郭襄'
 ```
 
 ACID：
@@ -77,8 +77,7 @@ start transaction;可选的
 语句2;
 ...
 步骤3;
-commit;提交事务
-rollback;回滚事务
+commit;提交事务/rollback;回滚事务
 ```
 
 **并发事务：**
