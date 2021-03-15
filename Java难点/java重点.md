@@ -62,9 +62,53 @@ enum Season {
 
 另外，推荐使用enum创建单例对象，线程安全的同时也不会像双重检查锁、内部类那样复杂，同时也不会被反序列化、反射等方式破坏单例规则。
 
-### String类的理解451
+### String类的理解
 
+**直接显式赋值：**
 
+- 声明为final，不可被继承
+- 实现了Serializable接口，支持序列化
+- 实现Comparable接口，表示可比较大小
+- 内部定义final char[] value用于存储字符串，不可改变指向，也没有方法修改内部数据，此为“不可变性”，体现在
+  1. 当对字符串重新赋值时，需要重新改变指向内存区域（方法区的字符串常量池），不能使用原有区域进行改写
+  2. 当对字符串执行拼接操作时，也需要重新指定内存区域。
+  3. 调用replace方法替换个别字符串时，也需要重新指定内存区域。
+- 区别于new一个对象，直接显式赋值，字符串声明在字符串常量池中。
+- 字符串常量池不会存储相同字符串。
+
+![image-20210315094448164](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210315094448164.png)
+
+**new构造器：**
+
+```java
+String s = "java";//字符串常量池
+s = new String("java");//堆空间地址值
+```
+
+![image-20210315094812330](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210315094812330.png)
+
+![image-20210315094938222](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210315094938222.png)
+
+**字符串+操作：**
+
+- 二者都是显式字面量相加，因此编译期间替换，替换为字符串常量池
+- 如果其中之一是变量形式出现，则通过new stringbuilder进行append最终进行tostring，tostring类似new string，但不完全一样。
+
+![image-20210315095521252](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210315095521252.png)
+
+#### Stringbuffer线程安全
+
+接下来两个内部是char value[]修饰，但没有final修饰，可变。
+
+初始化时，如果传入的字符串一开始为""，则内部value数组长度为16，之后append字符串先判断长度是否够。长度超出时，则新创建一个数组，并复制过去。
+
+stringbuffer任何关于修改字符串的方法都是在原有value基础上进行修改，时空效率上比String较高。
+
+方法链设计，如调用append方法后返回this对象，这样可以依次执行append。
+
+#### Stringbuilder非安全-效率高
+
+效率对比：StringBuilder>StringBuffer>String
 
 ### 泛型565
 
@@ -75,6 +119,8 @@ enum Season {
 
 
 ### 注解与反射【狂神】
+
+
 
 ### 注解Annotation
 
