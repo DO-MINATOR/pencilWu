@@ -110,9 +110,60 @@ stringbuffer任何关于修改字符串的方法都是在原有value基础上进
 
 效率对比：StringBuilder>StringBuffer>String
 
-### 泛型565
+### 泛型
 
+集合容器类在设计阶段没有指明将来所要存储的对象具体是什么类型的，在JDK5.0之前就只能设计为Object，在5.0之后改用泛型，当指明泛型类型时，对该类、接口的具体实现就能够明确要求属性、方法返回类型。其实这是一个编译期行为，旨在检查编码时所填入的类型是否满足泛型标准，在运行期间仍然看作Object，因此可通过反射破坏泛型约束。
 
+**注意点：**
+
+1. 尽管编译时ArrayList\<Integer> 和ArrayList\<String>是两个不同类型，但其实内部仍然看作Object，因此还是创建了同一个类的两个不同对象，JVM中只加载了这一个类。
+2. 泛型内部仍看作Object，但不完全等价于Object。
+3. 静态方法、属性无法使用泛型，因为泛型类是在创建实例时确定的。
+4. 子类可继承泛型父类，但遵循“富二代”原子，即必须指明或保留父类的泛型，同时还可以增加自己的泛型。
+5. 泛型方法只与调用方法时传入的参数或接受类型有关，和泛型类无关，静态方法可以使用泛型方法。
+
+**泛型在多态性的体现**
+
+```java
+List<Object> list1 = new ArrayList<>();
+List<String> list2 = new ArrayList<>();
+list1 = list2;//×，由于list2本来规定只能存放String类型变量，但强制赋值给list1，导致变量类型范围被扩大，就失去泛型约束的作用了
+
+List<String> list1 = new ArrayList<>();
+ArrayList<String> list2 = new ArrayList<>();
+list1 = list2;//√，这种写法可以，因为List是ArrayList的夫类，肯定包含子类所有的属性和方法。
+```
+
+**通配符"?"**
+
+```java
+ArrayList<Integer> list1 = new ArrayList<>();
+ArrayList<String> list2 = new ArrayList<>();
+ArrayList<?> list3 = null;
+//虽然list1和list2是不同泛型，但公共父类是泛型为?的list3
+//对于list3来说，只能读取(且转换为Object)，但无法添加，因为无法规定添加什么类型
+list3 = list1;
+list3 = list2;
+list2.add("hello");
+list2.add("world");
+Object o = list3.get(0);
+```
+
+**通配符"?"的extends和super**
+
+```java
+List<Person> list1 = new ArrayList<>();
+List<Student> list2 = new ArrayList<>();
+List<? extends Person> list3 = null;//<=Person
+List<? super Student> list4 = null;//>=Student
+list3 = list1;
+list3 = list2;
+Person person = list3.get(0);
+list4 = list1;
+list4 = list2;
+Object object = list4.get(0);
+list4.add(new Student());
+```
 
 ### IO流584
 
@@ -468,10 +519,10 @@ collectlist.forEach(System.out::println);//此时的forEach是collections的外�
 为了在程序中避免出现空指针异常而创建的一种“容器”。常用方法：
 
 ```java
-Person person = new lambda().new Person(12);
+Person person = new Person(12);
 person = null;
 Optional<Person> optionalPerson = Optional.ofNullable(person);
-Person one = optionalPerson.orElse(new lambda().new Person(15));
+Person one = optionalPerson.orElse(new Person(15));
 System.out.println(one.age);//15
 //Option.of创建一个非空容器
 //Optional.ofNullable创建可以为空的容器
