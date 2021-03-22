@@ -22,14 +22,6 @@ class Season {
     public String getName() {
         return name;
     }
-
-    @Override
-    public String toString() {
-        return "Season{" +
-                "name='" + name + '\'' +
-                ", id=" + id +
-                '}';
-    }
 }
 ```
 
@@ -165,9 +157,225 @@ Object object = list4.get(0);
 list4.add(new Student());
 ```
 
-### IO流584
+### IO流
 
+**流的分类：**
 
+- 处理单位不同：字节流、字符流
+- 流向不同：输入流、输出流
+- 处理方式不同：节点流、处理流
+
+**IO流体系：**
+
+![image-20210317095751852](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210317095751852.png)
+
+| 抽象基类     | 节点流                                     | 缓冲流                      | 转换流            | 数据流          | 对象流             |
+| ------------ | ------------------------------------------ | --------------------------- | ----------------- | --------------- | ------------------ |
+| InputStream  | FileInputStream(read(byte[]))              | BufferInputStream           | InputStreamReader | DataInputStream | ObjectInputStream  |
+| OutputStream | FileOutputStream(write(byte[],offset,len)) | BufferOutputStream          | OuputStreamWriter | DataOuputStream | ObjectOutputStream |
+| Reader       | FileReader(read(char[]))                   | BufferReader(readline())    |                   |                 |                    |
+| Writer       | FileWriter(write(char[],offset,len))       | BufferWriter(write(String)) |                   |                 |                    |
+
+**FileReader：**
+
+```java
+File file = new File("hello.txt");
+Reader reader = new FileReader(file);
+int r;
+char buf[]=new char[10];
+String s=null;
+try {
+    while (((r = reader.read(buf)) != -1)) {
+        s=new String(buf,0,r);
+        System.out.print(s);
+    }
+} catch (IOException e) {
+    e.printStackTrace();
+} finally {
+    try {
+        if (reader != null)
+            reader.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+```
+
+注意IO流中的try-catch-finally处理，防止资源未被关闭。（JVM垃圾回收可以针对没有引用的对象自动的进行回收，但像IO、Socket和数据库连接这类对象无法自动进行回收，一定注意手动close）
+
+**FileWriter：**
+
+1. 如果文件不存在，则自动创建
+2. 如果文件已经存在：
+   - new FileWirter(file, append=true)追加
+   - new FileWirter(file, append=false)覆盖
+
+**FileInputStream和FileOutputStream实现文件复制**
+
+```java
+File srcFile = new File("src.jpg");
+File destFile = new File("src2.jpg");
+FileInputStream fileInputStream = null;
+FileOutputStream fileOutputStream = null;
+try {
+    fileInputStream = new FileInputStream(srcFile);
+    fileOutputStream = new FileOutputStream(destFile);
+    byte buf[] = new byte[1024];
+    int r;
+    while ((r = fileInputStream.read(buf)) != -1) {//批量读取
+        fileOutputStream.write(buf, 0, r);//批量写入
+    }
+} catch (IOException e) {
+    e.printStackTrace();
+} finally {//关闭资源
+    try {
+        if (fileInputStream != null)
+            fileInputStream.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    try {
+        if (fileOutputStream != null)
+            fileOutputStream.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+```
+
+**BufferedInputStream和BufferedOutputStream复制速度提升**
+
+此为处理流，相较节点流，又在外包了一层，原来的FileInputStream和FileOutputStream中间的byte数组一旦填满，就立即传输，而BufferStream在中间额外创建了一个内存buffer，只有当该空间被填满以后，才会进行传输，相当于减少了IO次数。
+
+![img](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/20180930222711588)
+
+注意，在资源进行关闭后，只需关闭外层流即可，内层流也会被关闭，使用了装饰者模式。
+
+**转换流**
+
+- InputStreamReader：将磁盘中的字节流转换为内存中的字符流（解码）
+- OutputStreamWriter：将内存中的字符流再次转换为磁盘中的字节流（编码）
+
+![image-20210317120303811](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210317120303811.png)
+
+```java
+InputStreamReader inputStreamReader=new InputStreamReader(new FileInputStream(new File("")));
+```
+
+**System.in和System.out**
+
+System.in本质也是InputStream，其默认输入位置是键盘，out默认是控制台。
+
+```java
+//从标准输入读取字符串，转换成大写输出，如果是e或者exit则退出
+InputStreamReader inputStreamReader = new InputStreamReader(System.in);
+BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+try {
+    while (true) {
+        String data = bufferedReader.readLine();
+        if ("e".equalsIgnoreCase(data) || "exit".equalsIgnoreCase(data)) {
+            break;
+        }
+        System.out.println(data.toUpperCase());
+    }
+} catch (IOException e) {
+    e.printStackTrace();
+} finally {
+    try {
+        if (bufferedReader != null)
+            bufferedReader.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    try {
+        if (inputStreamReader != null)
+            inputStreamReader.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+```
+
+**数据流**
+
+将java内存中的基本数据类型转换为磁盘中的二进制数据。
+
+```java
+public static void main(String[] args) throws IOException {
+    DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(new File("")));
+    dataOutputStream.writeDouble(12.3);
+    dataOutputStream.writeBoolean(true);
+    dataOutputStream.flush();
+    dataOutputStream.close();
+}
+```
+
+**对象流**
+
+将内存中的对象以二进制流的方式写入到磁盘文件中。
+
+```java
+public static void main(String[] args) throws IOException {
+    ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(new File("")));
+    objectOutputStream.writeObject(new Person());
+}
+static class Person implements Serializable {
+    private static final long serialVersionUID = 3213123213L;
+    String name;
+    int age;
+}
+```
+
+serialVersionUID的作用是：如果没有显式指明该值，如果当类被修改时，该值会自动更改，此时如果还原原来就已经写入过的对象，则会报错，提示无法反序列化。因此它的作用时，确保当类结构发生变化时，反序列化仍可正常进行。
+
+总结，要想序列化成功，需满足：
+
+- 对象实现serializable接口，属性递归实现serializable接口
+- 对象提供一个serialVersionUID类静态常量
+- 如果不想某些属性被序列化，除了static修饰的静态变量意外，用transient修饰的变量也不会被序列化。
+
+现在的应用传输对象数据一般都使用json。
+
+### 反射
+
+反射是动态语言的关键，该机制允许在程序运行期间借助于ReflectionAPI获取类的任何信息，包括属性、方法、构造器，通过运行时类加载以及反射的机制，我们可以在方法区中产生任意class类的类型。
+
+用途：
+
+- 判断任意对象所属的类
+- 构造任意类的对象
+- 获取任意类所具有的成员变量和方法
+- 获取类的泛型信息
+- 调用任意一个对象的成员变量和方法
+- 处理注解
+- 生成代理对象，类的动态性（动态加载、动态生成）
+
+获取类的类型四种方式：
+
+```java
+public class Person {
+    public static void main(String[] args) throws ClassNotFoundException {
+        Class<Person> personClass = Person.class;
+
+        Person person = new Person();
+        personClass = (Class<Person>) person.getClass();
+
+        personClass = (Class<Person>) Class.forName("Person");
+
+        ClassLoader classLoader = Person.class.getClassLoader();
+        personClass = (Class<Person>) classLoader.loadClass("Person");
+    }
+}
+```
+
+通过反射创建运行时对象
+
+```java
+Class<Person> personClass = Person.class;
+Person person = personClass.newInstance();
+```
+
+本质上仍调用的是空参构造器，一般不会去获取指定的构造器方法（getconstructor）去创建一个对象。
 
 ### 注解与反射【狂神】
 
@@ -402,6 +610,7 @@ public class lambda {
 
         Comparator<Integer> com2 = Integer::compareTo;//类::实例方法
         System.out.println(com2.compare(1, 2));//-1
+        //同为类::实例方法的还有String::toUpperCase
     }
 }
 ```
@@ -438,7 +647,7 @@ static List<Person> getlist() {
     list.add(new Person("linda", 21));
     list.add(new Person("jack", 23));
     list.add(new Person("dsc", 25));
-    return list;java
+    return list;
 }
 ```
 
@@ -447,7 +656,7 @@ static List<Person> getlist() {
 ```java
 List<String> strings = Arrays.asList("aa", "bb", "cc");
 Stream<String> stream = strings.stream();
-stream.map(String::toUpperCase).forEach(System.out::println);
+stream.map(String::toUpperCase).forEach(System.out::println);//类::实例方法
 ```
 
 **flatmap算子：**
@@ -507,7 +716,7 @@ System.out.println(reduce);//20
 
 3、收集(转成collection集合)
 
-```
+```java
 List<Integer> list = Arrays.asList(1, 2, 3, 4);
 Stream<Integer> stream = list.stream();
 List<Integer> collectlist = stream.collect(Collectors.toList());
