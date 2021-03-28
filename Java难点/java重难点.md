@@ -1,4 +1,4 @@
-### 枚举类Enum
+### 1.枚举类Enum
 
 当定义有限个变量，且变量之间有一定次序关系时，使用枚举类创建final对象较为合适。
 
@@ -52,15 +52,13 @@ enum Season {
 
 修改方式是将`public static final Season`关键字删除，`new Season`语句删除，当Season enum加载时，四个对象在类初始化阶段创建，属于饿汉式。
 
-另外，推荐使用enum创建单例对象，线程安全的同时也不会像双重检查锁、内部类那样复杂，同时也不会被反序列化、反射等方式破坏单例规则。
+推荐使用enum创建单例对象，线程安全的同时也不会像双重检查锁、内部类那样复杂，同时也不会被反序列化、反射等方式破坏单例规则。
 
-### String类的理解
-
-**直接显式赋值：**
+### 2.String
 
 - 声明为final，不可被继承
 - 实现了Serializable接口，支持序列化
-- 实现Comparable接口，表示可比较大小
+- 实现Comparable接口，可比较大小
 - 内部定义final char[] value用于存储字符串，不可改变指向，也没有方法修改内部数据，此为“不可变性”，体现在
   1. 当对字符串重新赋值时，需要重新改变指向内存区域（方法区的字符串常量池），不能使用原有区域进行改写
   2. 当对字符串执行拼接操作时，也需要重新指定内存区域。
@@ -88,7 +86,7 @@ s = new String("java");//堆空间地址值
 
 ![image-20210315095521252](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210315095521252.png)
 
-#### Stringbuffer线程安全
+**Stringbuffer线程安全**
 
 接下来两个内部是char value[]修饰，但没有final修饰，可变。
 
@@ -98,11 +96,11 @@ stringbuffer任何关于修改字符串的方法都是在原有value基础上进
 
 方法链设计，如调用append方法后返回this对象，这样可以依次执行append。
 
-#### Stringbuilder非安全-效率高
+**Stringbuilder非安全-效率高**
 
 效率对比：StringBuilder>StringBuffer>String
 
-### 泛型
+### 3.泛型
 
 集合容器类在设计阶段没有指明将来所要存储的对象具体是什么类型的，在JDK5.0之前就只能设计为Object，在5.0之后改用泛型，当指明泛型类型时，对该类、接口的具体实现就能够明确要求属性、方法返回类型。其实这是一个编译期行为，旨在检查编码时所填入的类型是否满足泛型标准，在运行期间仍然看作Object，因此可通过反射破坏泛型约束。
 
@@ -157,7 +155,7 @@ Object object = list4.get(0);
 list4.add(new Student());
 ```
 
-### IO流
+### 4.IO流
 
 **流的分类：**
 
@@ -336,9 +334,51 @@ serialVersionUID的作用是：如果没有显式指明该值，如果当类被�
 
 现在的应用传输对象数据一般都使用json。
 
-### 反射
+### 5.注解
 
-反射是动态语言的关键，该机制允许在程序运行期间借助于ReflectionAPI获取类的任何信息，包括属性、方法、构造器，通过运行时类加载以及反射的机制，我们可以在方法区中产生任意class类的类型。
+JDK1.5增加的特殊标记，在类被加载、运行时读取，执行相应的处理逻辑。可以说框架=注解+反射+设计模式
+
+使用场景：
+
+- 文档注解，如@author，@version，@see
+- 编译时检查，如@Override，@Deprecated
+- 功能补充，如@WebServlet，@Controller，@Transaction，@Test
+
+**自定义注解**
+
+1. 注解声明为@interface
+
+2. 内部定义成员，通常使用value表示
+
+3. 可以指定默认值，default
+
+4. 如果没有成员，则只起到标识作用，否则使用注解时需要显式指明成员值，自定义注解需要使用注解处理流程（使用反射）才有意义
+
+
+```java
+public @interface Myannotation {
+    String value() default "test";
+}
+
+@Myannotation(value = "test_good")
+class test {
+}
+```
+
+**元注解**
+
+注解的注解，对定义的注解进行补充说明。
+
+- Retention（生命周期注解）：指定所修饰的Annotation的生命周期，SOURCE\CLASS，以及RUNTIME，只有声明为RUNTIME的注解才能通过反射调用。
+- Target（修饰对象）：TYPE、FILED、CONSTRUCT...
+- Documented（javadoc保留）：声明该元注解时，javadoc后会显示该注解
+- Inherited（继承性）：声明该元注解的注解会自动继承给子类
+
+注解的变量值通过反射获取，并形成一套逻辑。
+
+### 6.反射
+
+反射是动态语言的关键，该机制允许在程序运行期间借助于ReflectionAPI获取类的任何信息，包括属性、方法、构造器和注解等，通过运行时类加载以及反射的机制，我们可以在方法区中产生任意class类的类型。
 
 用途：
 
@@ -360,10 +400,10 @@ public class Person {
         Person person = new Person();
         personClass = (Class<Person>) person.getClass();
 
-        personClass = (Class<Person>) Class.forName("Person");
+        personClass = (Class<Person>) Class.forName("Person");//主动加载
 
         ClassLoader classLoader = Person.class.getClassLoader();
-        personClass = (Class<Person>) classLoader.loadClass("Person");
+        personClass = (Class<Person>) classLoader.loadClass("Person");//被动加载
     }
 }
 ```
@@ -377,54 +417,91 @@ Person person = personClass.newInstance();
 
 本质上仍调用的是空参构造器，一般不会去获取指定的构造器方法（getconstructor）去创建一个对象。
 
-### 注解与反射【狂神】
-
-
-
-### 注解Annotation
-
-JDK1.5增加的特殊标记，在类被加载、运行时读取，执行相应的处理逻辑。可以说框架=注解+反射+设计模式
-
-使用场景：
-
-- 文档注解，如@author，@version，@see
-- 编译时检查，如@Override，@Deprecated
-- 功能补充，如@WebServlet，@Controller，@Transaction，@Test
-
-**自定义注解**
-
-1. 注解声明为@interface
-
-2. 内部定义成员，通常使用value表示
-
-3. 可以指定默认值，default
-
-4. 如果没有成员，则只起到标识作用，否则使用注解时需要显式指明成员值
-
-   自定义注解需要使用注解处理流程（使用反射）才有意义
+注意，通过setAccessible可以强制获取到私有属性、方法，并且关闭jvm对其访问权限的检查，以提高效率。
 
 ```java
-public @interface Myannotation {
-    String value() default "test";
-}
+Class<test> cl = (Class<test>) Class.forName("test");
+Method method = cl.getMethods()[1];
+method.setAccessible(true);
+```
 
-@Myannotation("test_good")
-class test {
+**获取类内部结构**
+
+```java
+public static void main(String[] args) throws ClassNotFoundException {
+    Class<test> cl = (Class<test>) Class.forName("test");
+    Field[] fields = cl.getFields();
+    for (Field field : fields) {
+        System.out.println(field);
+    }//私有属性
+
+    fields = cl.getDeclaredFields();
+    for (Field field : fields) {
+        System.out.println(field);
+    }//全部属性
+
+    Method[] methods = cl.getMethods();
+    for (Method method : methods) {
+        System.out.println(method);
+    }//子类及其父类public方法
+
+    methods = cl.getDeclaredMethods();
+    for (Method method : methods) {
+        System.out.println(method);
+    }//本类全部方法
 }
 ```
 
-**元注解**
+**反射处理注解**
 
-注解的注解，对定义的注解进行补充说明。
+```java
+public class Test {
+    public static void main(String[] args) throws NoSuchFieldException {
+        Class<Person> personClass = Person.class;
+        clAnnotation annotation = personClass.getAnnotation(clAnnotation.class);
+        System.out.println(annotation.value());
 
-- Retention（生命周期注解）：指定所修饰的Annotation的生命周期，SOURCE\CLASS，以及RUNTIME，只有声明为RUNTIME的注解才能通过反射调用。
-- Target（修饰对象）：TYPE、FILED、CONSTRUCT...
-- Documented（javadoc保留）：声明该注解时，javadoc后会显示该注解
-- Inherited（继承性）：声明该注解的注解会自动继承给子类
+        Field age = personClass.getDeclaredField("age");
+        filedAnnotation annotation1 = age.getAnnotation(filedAnnotation.class);
+        System.out.println(annotation1.name());
+        System.out.println(annotation1.type());
+        System.out.println(annotation1.length());
+    }
+}
 
-### 动态代理
+@clAnnotation("clAnnotation_test")
+class Person {
+    @filedAnnotation(name = "age", type = "int", length = 3)
+    int age;
+    @filedAnnotation(name = "name", type = "varchar", length = 20)
+    String name;
 
-#### 静态代理
+    public Person(int age, String name) {
+        this.age = age;
+        this.name = name;
+    }
+}
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@interface clAnnotation {
+    String value();
+}
+
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@interface filedAnnotation {
+    String name();
+
+    String type();
+
+    int length();
+}
+```
+
+### 7.代理
+
+**静态代理**
 
 接口规范了代理类和被代理类的调用方法名，被代理类实现具体细节，代理类通过将被代理类赋值自身属性，并扩充实现方法，此后通过代理类调用方法，以实现静态代理。实现如下：
 
@@ -470,7 +547,7 @@ class Proxy implements Clothfactory {
 
 静态代理的实现特点是，编译期间就要确定所有代理类和被代理类，无法再在运行期间动态生成指定代理类。
 
-#### 动态代理
+**动态代理**
 
 没有显式写明代理类对象，而是通过Proxy.newProxyInstance()方法返回一个被代理对象，该对象实现同名接口，用于之后调用代理类对象的方法。
 
@@ -539,9 +616,9 @@ produce lining-cloth
 
 无论是静态代理还是动态代理，被代理对象和代理对象都实现同样的接口，最终通过代理类调用原来的同名方法。
 
-### JDK8新特性
+### 8.JDK8新特性
 
-#### Lambda表达式与方法引用
+**Lambda表达式与方法引用**
 
 当接口只有一个方法需要实现时，可以采用lambda表达式或方法引用。由于接口只有一个方法，相当于被实现的方法是固定的，因此lambda表达式左边的参数列表固定（方法的形参列表），`->`右侧为执行体。lambda其本质就是接口的一个实例化对象，只不过是匿名的。
 
@@ -563,7 +640,7 @@ public static void main(String[] args) {
 }
 ```
 
-#### 函数接口
+**函数接口**
 
 注解@FunctionnalInterface用于校验接口是否满足lambda函数式接口，只有一个抽象方法时，校验通过。
 
@@ -617,7 +694,7 @@ public class lambda {
 
 **注意：**类::实例方法相当于将第一个参数作为对象，当成该类的实例对象，进而能够执行该方法。构造器引用、数组引用也是可以看作类::静态方法的补充，`类名::new`，在创建对象/数组时可以考虑该种写法。
 
-#### Stream
+**Stream**
 
 对集合进行操作，执行查找、过滤、映射数据等操作，相较于在数据库中执行计算的SQL，它是在java层面中进行数据计算。Collection面向数据，Stream面向计算。
 
@@ -723,7 +800,7 @@ List<Integer> collectlist = stream.collect(Collectors.toList());
 collectlist.forEach(System.out::println);//此时的forEach是collections的外部迭代
 ```
 
-#### Optional
+**Optional**
 
 为了在程序中避免出现空指针异常而创建的一种“容器”。常用方法：
 
