@@ -8,6 +8,8 @@
 
   当servlet修改时，自动装载。
 
+![image-20210329150201400](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210329150201400.png)
+
 3、servlet存在多线程安全问题，因为访问只会创建一个servlet实例对象，而多个用户访问同一个对象势必存在线程安全问题。在以前老的版本解决方案中，采用的是让serlvet去实现SingleThreadModel接口，这样就会为每一个线程创建一个该servlet实例对象，但本质不是解决多线程问题。
 
 4、servlet内置对象：
@@ -23,3 +25,4 @@
 ![image-20200530101836583](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20200530101836583.png)
 
 7、mvc的设计流程是，根据业务逻辑先设计出合理的模型层，用于表示业务对象所拥有的属性和方法，然后测试改模型所有方法以及属性返回值。然后在servlet中根据客户端的请求实施相应业务逻辑，在最终返回给用户前端jsp页面时，注意传入正确模型，jsp再通过脚本代码获取模型数据。
+
