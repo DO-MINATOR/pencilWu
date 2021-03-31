@@ -6,9 +6,11 @@
 - logs：运行时日志
 - temp：运行临时文件
 - webapps：部署的web工程
-- work：工作时缓存文件，如jsp翻译后的class文件，session钝化后的文件
+- work：工作时缓存文件，如jsp/servlet翻译后的class文件，session钝化后的文件
 
 ### 部署工程
+
+两种方式：
 
 1. 将工程目录存放于webapps目录下
 

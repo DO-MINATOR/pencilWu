@@ -151,7 +151,6 @@ public class BookDaoImpl extends BaseDao<Book> implements BookDao {
 		String sql = "DELETE FROM books WHERE id = ?";
 		// 调用BaseDao中通用增删改的方法
 		update(conn,sql, bookId);
-			
 	}
 
 	@Override

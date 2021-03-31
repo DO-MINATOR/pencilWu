@@ -58,9 +58,9 @@ rs = ps.executeQuery();
 if(rs.next()){
     Integer id = rs.getInt(1);
     String name = rs.getString(2);
-	String email = rs.getString(3);
+    String email = rs.getString(3);
     Date birth = rs.getDate(4);
-	Customer cust = new Customer(id, name, email, birth);
+    Customer cust = new Customer(id, name, email, birth);
     System.out.println(cust); 
     //读取Blob类型的字段
 	Blob photo = rs.getBlob(5);

@@ -20,15 +20,15 @@ out常用方法为println，直接向客户端输出字符串
 
 request用于获取请求参数，get、post均可，常用getParameter方法：以及getContentType()、getProtocol()、getServerName()等常用方法。
 
-reponse的printWriter对象总是比out对象先输出至客户端，除非out使用flush强制输出客户端；sendRedirect（请求重定向是客户端行为，302显示改变URL地址，而请求转发是服务端行为，url不会改变，转发可以保存请求信息）
+reponse的printWriter对象总是比out对象先输出至客户端，除非out使用flush强制输出客户端；sendRedirect（请求重定向是客户端行为，302显示改变URL地址，而请求转发requestDispatcher是服务端行为，url不会改变，转发可以保存请求信息）
 
 session是服务端用于保存客户端用户信息的机制，当客户端第一次打开一个jsp开始，服务端创建一个对应的session，直至用户完全关闭所有有关该服务器的会话，或者session到期。
 
 application是用于保存全局应用服务器状态信息的机制，所有客户端都可以获取到同一个application信息。
 
-page对象与原生的Object类似，可用equal、toString等方法。
+pageContext对象作用域为当前页面，退出即清空。
 
-pageContext是上述所有对象的一个集大成者，相当于全局请求的一个上下文；config是一个Servlet初始化时所需要的配置信息。
+pageContext是上述所有对象的一个集大成者，可以获取到其他任何对象。
 
 exception对象，当一个页面抛出异常时，需要有一个单独的页面接受处理该异常，发生异常的页面需要指定当异常发生时跳转到的界面，而接受异常的界面需要设置isErrorpage属性为true，然后使用该内置对象获取异常信息。
 
@@ -36,15 +36,13 @@ exception对象，当一个页面抛出异常时，需要有一个单独的页�
 
 ![image-20200530101701423](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20200530101736242.png)
 
-  同理，使用getproperty可以获取javabean实例的属性值，方法和上述类似。
+同理，使用getproperty可以获取javabean实例的属性值，方法和上述类似。
 
 9、关于javabean的作用域，从小到大分别为page、request、session、application，可以使用getproperty或者getattribute获取。
 
 10、javabean的出现引入了Model 1模式，在此之前全部的业务逻辑、数据封装和视图呈现全部由jsp完成，而javabean则取代了部分的业务逻辑和数据封装。
 
 ![image-20200530101736242](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20200530101748853.png)
-
-关于使用javabean进行业务逻辑的处理，方法则是编写一个java类（本质上是一个工具类DAO，而对象模型是PO类），通过在DAO中编写业务逻辑，并在jsp中通过uesbean引入该对象。
 
 11、cookie和session都可以用于保存和读取用户信息，不同之处在于cookie是保存在客户端，而session保存在服务端，一般关闭浏览器就会自动清除。
 

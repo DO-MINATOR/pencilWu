@@ -16,16 +16,18 @@ commons-dbutils 是 Apache 组织提供的一个开源 JDBC工具类库，它是
 - public static void commitAndCloseQuietly(Connection conn)： 用来提交连接，然后关闭连接，并且在关闭连接时不抛出SQL异常。 
 - public static void rollback(Connection conn)throws SQLException：允许conn为null，因为方法内部做了判断
 - public static void rollbackAndClose(Connection conn)throws SQLException
-- rollbackAndCloseQuietly(Connection)
+- public static void rollbackAndCloseQuietly(Connection)
 - public static boolean loadDriver(java.lang.String driverClassName)：这一方装载并注册JDBC驱动程序，如果成功就返回true。使用该方法，你不需要捕捉这个异常ClassNotFoundException。
+
+**注意：**close虽然只显式close了connection，但是内部同样close了Statement以及ResultSet。
 
 ### QueryRunner
 
-- 简单化了CRUD操作，例如增删改操作都通过update操作来实现：
+- 简单化了CUD操作，例如增删改操作都通过update操作来实现：
 
 **public int update(Connection conn, String sql, Object... params) **：用来执行一个更新（插入、更新或删除）操作。
 
-- 而查询操作是通过query语句配合ResultSetHandler来完成：
+- 而查询操作R是通过query语句配合ResultSetHandler来完成：
 
 **public Object query(Connection conn, String sql, ResultSetHandler rsh,Object... params) **：执行一个查询操作，在这个查询中，对象数组中的每个元素值被用来作为查询语句的置换参数。
 
@@ -81,8 +83,7 @@ public void testQueryInstance() throws Exception{
 	QueryRunner runner = new QueryRunner();
 	Connection conn = JDBCUtils.getConnection();
 	String sql = "select id,name,email,birth from customers where id = ?";
-		
-	//
+
 	BeanHandler<Customer> handler = new BeanHandler<>(Customer.class);
 	Customer customer = runner.query(conn, sql, handler, 23);
 	System.out.println(customer);	
@@ -97,10 +98,9 @@ public void testQueryInstance() throws Exception{
 @Test
 public void testQueryList() throws Exception{
 	QueryRunner runner = new QueryRunner();
-	Connection conn = JDBCUtils.getConnection3();
+	Connection conn = JDBCUtils.getConnection();
 	String sql = "select id,name,email,birth from customers where id < ?";
 		
-	//
 	BeanListHandler<Customer> handler = new BeanListHandler<>(Customer.class);
 	List<Customer> list = runner.query(conn, sql, handler, 23);
 	list.forEach(System.out::println);
@@ -109,14 +109,13 @@ public void testQueryList() throws Exception{
 
 
 /*
- * 如何查询类似于最大的，最小的，平均的，总和，个数相关的数据，
+ * 如何查询类似于最大的，最小的，平均的，总和等单个数据，
  * 使用ScalarHandler
  */
 @Test
 public void testQueryValue() throws Exception{
 	QueryRunner runner = new QueryRunner();
-
-	Connection conn = JDBCUtils.getConnection3();
+	Connection conn = JDBCUtils.getConnection();
 		
 	//测试一：
 //	String sql = "select count(*) from customers where id < ?";
@@ -139,6 +138,7 @@ public void testQueryValue() throws Exception{
 ```java
 public void testUpdateWithTx() {
 	Connection conn = null;
+	conn.setAutoCommit(false);
 	try {
 		//1.获取连接的操作
 		//① 手写的连接：JDBCUtils.getConnection();
@@ -147,20 +147,17 @@ public void testUpdateWithTx() {
 		//2.对数据表进行一系列CRUD操作
 		//① 使用PreparedStatement实现通用的增删改、查询操作
 		//② 使用dbutils提供的jar包中提供的QueryRunner类
-			
+        
 		//提交数据
 		conn.commit();
-			
 	} catch (Exception e) {
 		e.printStackTrace();
-			
 		try {
 			//回滚数据
 			conn.rollback();
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-			
 	}finally{
 		//3.关闭连接等操作
 		//① JDBCUtils.closeResource();

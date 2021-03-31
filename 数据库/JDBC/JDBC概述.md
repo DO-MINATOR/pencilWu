@@ -12,7 +12,7 @@
   - **JDBC**直接访问数据库
   - JDO (Java Data Object )技术
 
-  - **第三方O/R工具**，如Hibernate, Mybatis 等
+  - **第三方ORM工具**，如Hibernate, Mybatis 等
 
 - JDBC是java访问数据库的基石，JDO、Hibernate、MyBatis等只是更好的封装了JDBC。
 

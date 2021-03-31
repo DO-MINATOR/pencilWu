@@ -70,7 +70,7 @@
 **查询代码：**
 
 ```java
-	// 通用的针对于不同表的查询:返回一个对象 (version 1.0)
+	// 通用的针对于不同表的查询:返回一个对象
 	public <T> T getInstance(Class<T> clazz, String sql, Object... args) {
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -125,7 +125,7 @@
 
 - 调用PreparedStatement的executeQuery() 方法，查询结果是一个ResultSet 对象
 
-- ResultSet 对象以逻辑表格的形式封装了执行数据库操作的结果集，ResultSet 接口由数据库厂商提供实现
+- ResultSet 对象以逻辑表格的形式封装了执行数据库操作的结果集，ResultSet接口由数据库厂商实现
 - ResultSet 返回的实际上就是一张数据表。有一个指针指向数据表的第一条记录的前面。
 
 - ResultSet 对象维护了一个指向当前数据行的**游标**，初始的时候，游标在第一行之前，可以通过 ResultSet 对象的 next() 方法移动到下一行。调用 next()方法检测下一行是否有效。若有效，该方法返回 true，且指针下移。相当于Iterator对象的 hasNext() 和 next() 方法的结合体。
@@ -152,7 +152,7 @@ ResultSetMetaData meta = rs.getMetaData();
 ### 资源释放
 
 - 释放ResultSet, Statement,Connection。
-- 数据库连接（Connection）是非常稀有的资源，用完后必须马上释放，如果Connection不能及时正确的关闭将导致系统宕机。Connection的使用原则是**尽量晚创建，尽量早的释放。**
+- 数据库连接（Connection）是非常稀有的资源，用完后必须马上释放，如果Connection不能及时正确的关闭将导致资源泄露。Connection的使用原则是**尽量晚创建，尽量早的释放。**
 - 可以在finally中关闭，保证及时其他代码出现异常，资源也一定能被关闭。
 
 **注意：**数据库连接池返回的conn对象由于使用了装饰者模式，因此调用close方法并没有真正关闭资源，而是返回给池中。
