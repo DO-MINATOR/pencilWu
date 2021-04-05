@@ -1,12 +1,53 @@
-1、过滤器是一个服务端组件，它可以截取用户的请求和相应信息，并根据一定规则进行信息过滤。
-
-2、过滤器设计步骤：创建实现了Filter接口的自定义过滤器，实现init、destroy和doFilter方法，在web.xml文件中配置过滤器名称和class类名，配置url映射（及过滤器响应哪些url的请求）
-
-3、多个过滤器（如果是同一个url映射），则可以组成过滤器链，通过doChain方法依次调用不同过滤器的doFilter方法，类似一种函数调用的堆栈方式。
-
-4、Filter分为6大类，request和include类似（一般请求），forward、error和async。
-
 5、servlet2.5升级到3.0版本后，可无需在web.xml进行配置，而是使用注解声明一个类class是过滤器。
 
-6、pattern映射规则，/*包括所有路由，但不包含.do .jsp结尾的路由，*.do *.jsp匹配这些结尾的路由，/包括所有
+6、pattern映射规则，/\*包括所有路由，但不包含.do .jsp结尾的路由，*.do *.jsp匹配这些结尾的路由，/包括所有
+
+### 简介
+
+1. 三大组件之一：Servlet、Listener、Filter
+2. 作为JavaEE过滤器的接口
+3. 作用是拦截请求，过滤响应(如：权限检查、日记操作、事务管理)
+
+图示说明请求和响应的过滤
+
+![image-20210405111653407](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210405111653407.png)
+
+### 实现步骤
+
+1. 编写一个实现Filter的类。
+2. 实现DoFilter方法，Filterchain.doFilter()方法可以让请求正常继续。
+3. 在web.xml中配置该Filter并配置过滤地址。
+
+### 生命周期
+
+1. 构造器
+2. init初始化
+3. doFilter执行过滤动作，请求正常响应或下一个Filter
+4. destroy停止web工程执行
+
+### 过滤器链
+
+![image-20210405113356836](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210405113356836.png)
+
+### 匹配方式
+
+-  精确匹配
+
+  ```xml
+  <url-pattern>/admin/target.jsp</url-pattern>
+  ```
+
+- 目录匹配
+
+  ```xml
+  <url-pattern>/admin/</url-pattern>
+  ```
+
+- 后缀匹配
+
+  ```xml
+  <url-pattern>*.jsp</url-pattern>
+  ```
+
+**注意：**过滤器不论请求的资源是否存在，只管路径是否匹配。
 

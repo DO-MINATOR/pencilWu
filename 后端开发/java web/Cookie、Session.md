@@ -77,3 +77,8 @@ session.getMaxInactiveInterval();
 session.invalidate();
 ```
 
+#### session获取底层原理
+
+当服务器设置session以后，相应的会给客户端发送一个获取该session的cookie，这样二次请求时，就可以根据此cookie获取到session对象。
+
+![image-20210405091450588](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210405091450588.png)
