@@ -49,5 +49,11 @@
   <url-pattern>*.jsp</url-pattern>
   ```
 
+-  全匹配
+
+   ```xml
+   <url-pattern>/*</url-pattern>
+   ```
+
 **注意：**过滤器不论请求的资源是否存在，只管路径是否匹配。
 
