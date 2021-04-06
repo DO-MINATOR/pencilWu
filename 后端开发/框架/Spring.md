@@ -179,3 +179,26 @@ public void test1(){
 }
 ```
 
+### Bean管理
+
+#### xml配置
+
+```xml
+<bean id="user" class="...">
+```
+
+id：获取对象的标识
+class：类的全限定名
+创建对象默认调用无参构造方法。
+DI：依赖注入的具体实现。
+
+```xml
+<bean id="service" class="...">
+    <property name="name" ref="hello"></property>
+    <property name="userdao" ref="daoImpl"></property>
+</bean>
+```
+
+数组、List、Map和Set集合类属性的注入
+
+1. 使用的是哪一个实现类。
