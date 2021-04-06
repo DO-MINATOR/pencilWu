@@ -68,7 +68,7 @@ lazy-initialization-mode initial/destroy-method
 
 17、通过aop:declare-parents，可以为指定对象声明一个它实现的类。
 
-**AOP****注解：**
+**AOP注解：**
 
 18、aop也有注解的方式，对于通知类，需要打上@Aspect和@Component，只打第一个不会被context:component-scan自动装配，同时配置文件写上
 
@@ -106,3 +106,76 @@ after、afterreturing、around、agter-throwing实现方式一样
 3、事务管理，spring提供了对数据库业务逻辑的事务管理方案。包括编程式事务管理和声明式事务管理，以保证事务的原子性、一致性、持久性、隔离性。
 
 4、事务的7种传播行为，其中PROPAGATION_REQUIRED比较常用，即如果当前上下文有事务，就直接加入到该事务中，否则创建一个事务。
+
+
+
+
+
+
+
+### 简介
+
+- 轻量级的开源JavaEE框架
+- 解决企业开发web工程的复杂性
+- 双核心：
+  - IOC：控制反转，将对象创建的过程交给Spring管理。
+  - AOP：面向切面，减少代码入侵，扩充代码功能。
+
+### 特点
+
+1. 方便解耦，简化开发
+2. AOP切面编程
+3. 整合Junit方便测试
+4. 整合其余框架SpringMVC、Mybatis
+5. 封装常用API，如JDBCTemplate、事务
+6. 源码精良，适合学习
+
+### 核心包
+
+![image-20210406161233813](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210406161234387.png)
+
+通常为了能正常运行，还需要引入logging日志包。
+
+### IOC
+
+1. 控制反转，将对象创建和之间的依赖调用过程交给框架完成。
+2. 通过IOC，降低了非业务代码的编写，降低模块间的耦合度。
+
+#### 原理
+
+- xml解析
+- 工厂模式、单例模式
+- 反射
+
+#### 图示过程
+
+在userService中调用userDao的方法。需要尽可能降低模块之间的耦合度
+
+1. 原始方式
+   ![image-20210406162738027](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210406162738027.png)
+
+2. 工厂模式
+   ![image-20210406162806623](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210406162806623.png)
+   此时仍存在模块间的耦合，由于在factory中对UserDao的限制过于明确，此时Dao的修改会引起Factory的修改。
+
+3. xml解析+工厂+反射
+   ![image-20210406163608980](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210406163608980.png)
+
+   此时只需要修改xml中class的全限定名即可实现具体模块的替换。
+
+IOC思想基于容器来完成，底层就是对象工厂。
+
+提供了两个实现方式：
+
+1. BeanFactory：开发人员一般不使用。对象在使用时才创建
+2. ApplicationContext：BeanFactory接口的子接口，功能更强大。加载配置文件随机创建对象
+
+```java
+@Test
+public void test1(){
+    ApplicationContext applicationContext = new ClassPathXmlApplicationContext("Spring.xml");
+    User user = applicationContext.getBean("user", User.class);
+    user.add();
+}
+```
+
