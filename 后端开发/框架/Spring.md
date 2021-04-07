@@ -141,13 +141,13 @@ after、afterreturing、around、agter-throwing实现方式一样
 1. 控制反转，将对象创建和之间的依赖调用过程交给框架完成。
 2. 通过IOC，降低了非业务代码的编写，降低模块间的耦合度。
 
-#### 原理
+##### 原理
 
 - xml解析
 - 工厂模式、单例模式
 - 反射
 
-#### 图示过程
+##### 图示过程
 
 在userService中调用userDao的方法。需要尽可能降低模块之间的耦合度
 
@@ -179,9 +179,9 @@ public void test1(){
 }
 ```
 
-### Bean管理
+#### Bean管理
 
-#### xml
+##### xml
 
 ```xml
 <bean id="user" class="...">
@@ -201,11 +201,11 @@ DI：依赖注入的具体实现。
 
 数组、List、Map和Set集合类属性的注入，注意，对于集合类，Spring有它默认的实现类，比如List是LinkedList，Map是LinkedHashMap。
 
-#### 注解
+##### 注解
 
 相对xml更加简洁。
 
-1. 引入依赖sring-aop
+1. 引入依赖spring-aop
 
 2. 开启组件扫描
 
@@ -221,9 +221,12 @@ DI：依赖注入的具体实现。
    </beans>
    ```
 
-   
+3. 依赖注入
 
-### 生命周期
+   - 对象类型注入：@Autowired（根据类型）、@Qualifier（根据名称，需与autowired一起使用）、@Resource（前两者的混合体）普通类型注入：
+   - 普通类型注入：@Value
+
+#### 生命周期
 
 1. 调用对象的构造器方法
 2. 设置对象依赖
@@ -231,7 +234,7 @@ DI：依赖注入的具体实现。
 4. 使用bean
 5. 容器关闭时，调用bean的销毁方法（需要手动配置）
 
-### xml管理
+#### xml管理
 
 如果将所有的bean管理（对象创建和依赖注入）全部放到application.xml中，就会繁杂，因此类似于jdbc.properties的方式引入外部配置文件，并在该xml中导入。
 
@@ -249,4 +252,15 @@ DI：依赖注入的具体实现。
     <context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
 </beans>
 ```
+
+### AOP
+
+不改变原有代码的基础上，增强原有方法。
+
+#### 原理
+
+- 有接口的情况，JDK动态代理，创建的是接口的实现类作为代理对象
+  ![image-20210407211153062](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210407211153062.png)
+- 没有接口的情况，CGLIB动态代理，创建的是被代理对象的子类作为代理对象
+  ![image-20210407211312227](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210407211312227.png)
 
