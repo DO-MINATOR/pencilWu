@@ -181,7 +181,7 @@ public void test1(){
 
 ### Bean管理
 
-#### xml配置
+#### xml
 
 ```xml
 <bean id="user" class="...">
@@ -199,6 +199,54 @@ DI：依赖注入的具体实现。
 </bean>
 ```
 
-数组、List、Map和Set集合类属性的注入
+数组、List、Map和Set集合类属性的注入，注意，对于集合类，Spring有它默认的实现类，比如List是LinkedList，Map是LinkedHashMap。
 
-1. 使用的是哪一个实现类。
+#### 注解
+
+相对xml更加简洁。
+
+1. 引入依赖sring-aop
+
+2. 开启组件扫描
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:context="http://www.springframework.org/schema/context"
+          xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                              http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+   
+       <context:component-scan base-package="service"></context:component-scan>
+   </beans>
+   ```
+
+   
+
+### 生命周期
+
+1. 调用对象的构造器方法
+2. 设置对象依赖
+3. 调用bean的初始化方法（需要手动配置）
+4. 使用bean
+5. 容器关闭时，调用bean的销毁方法（需要手动配置）
+
+### xml管理
+
+如果将所有的bean管理（对象创建和依赖注入）全部放到application.xml中，就会繁杂，因此类似于jdbc.properties的方式引入外部配置文件，并在该xml中导入。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <bean id="person" class="service.Person">
+        <property name="name" value="${name}"></property>
+    </bean>
+    <context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
+</beans>
+```
+
