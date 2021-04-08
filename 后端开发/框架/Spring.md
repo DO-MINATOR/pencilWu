@@ -141,13 +141,13 @@ after、afterreturing、around、agter-throwing实现方式一样
 1. 控制反转，将对象创建和之间的依赖调用过程交给框架完成。
 2. 通过IOC，降低了非业务代码的编写，降低模块间的耦合度。
 
-##### 原理
+#### 原理
 
 - xml解析
 - 工厂模式、单例模式
 - 反射
 
-##### 图示过程
+#### 图示过程
 
 在userService中调用userDao的方法。需要尽可能降低模块之间的耦合度
 
@@ -181,7 +181,7 @@ public void test1(){
 
 #### Bean管理
 
-##### xml
+**xml**
 
 ```xml
 <bean id="user" class="...">
@@ -201,7 +201,7 @@ DI：依赖注入的具体实现。
 
 数组、List、Map和Set集合类属性的注入，注意，对于集合类，Spring有它默认的实现类，比如List是LinkedList，Map是LinkedHashMap。
 
-##### 注解
+**注解**
 
 相对xml更加简洁。
 
@@ -264,3 +264,40 @@ DI：依赖注入的具体实现。
 - 没有接口的情况，CGLIB动态代理，创建的是被代理对象的子类作为代理对象
   ![image-20210407211312227](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210407211312227.png)
 
+#### 术语
+
+- 连接点：可以被代理的方法
+- 切入点：实际被代理的方法
+- 通知（增强）：代理对象增加的方法
+  - 前置
+  - 后置
+  - 环绕
+  - 异常
+  - 最终：类似于finally
+- 切面：切入点+通知
+
+AspectJ，一个独立的jar包，通常和Spring一起实现AOP，可以通过xml、注解。
+
+#### 语法结构
+
+execution([权限修饰符]、[返回类型]、[类全限定名]、[方法名]、[参数列表])
+
+- 对com.wsp.dao.Userdao的add方法进行增强
+
+  ```
+  execution(* com.wsp.dao.Userdao.add(..))
+  ```
+
+- 对com.wsp.dao.Userdao的所有方法进行增强
+
+  ```
+  execution(* com.wsp.dao.Userdao.*(..))
+  ```
+
+- 对com.wsp.dao包下所有类的所有方法进行增强
+
+  ```
+  execution(* com.wsp.dao.*.*(..))
+  ```
+
+注意权限修饰符一般不限定(*)，返回类型通常可以省略。
