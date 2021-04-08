@@ -168,7 +168,7 @@ IOC思想基于容器来完成，底层就是对象工厂。
 提供了两个实现方式：
 
 1. BeanFactory：开发人员一般不使用。对象在使用时才创建
-2. ApplicationContext：BeanFactory接口的子接口，功能更强大。加载配置文件随机创建对象
+2. ApplicationContext：BeanFactory的子接口，功能更强大。加载配置文件随即创建对象
 
 ```java
 @Test
@@ -213,11 +213,11 @@ DI：依赖注入的具体实现。
    <?xml version="1.0" encoding="UTF-8"?>
    <beans xmlns="http://www.springframework.org/schema/beans"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xmlns:context="http://www.springframework.org/schema/context"
+          xmlns:context="http://www.springframework.org/schema/context"#开启组件扫描
           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-                              http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
    
-       <context:component-scan base-package="service"></context:component-scan>
+       <context:component-scan base-package="service"></context:component-scan>//待扫描的包
    </beans>
    ```
 
@@ -244,7 +244,7 @@ DI：依赖注入的具体实现。
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+                   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <bean id="person" class="service.Person">
         <property name="name" value="${name}"></property>
