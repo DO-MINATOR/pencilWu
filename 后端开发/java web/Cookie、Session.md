@@ -67,7 +67,7 @@ session.getMaxInactiveInterval();
 
 可以在私有的web工程下的web.xml中修改默认值。
 
-**注意：**超时时长指的是客户端两次请求间的间隔时常。
+**注意：**超时时长指的是客户端两次请求间的间隔时长。
 
 ![image-20210403100703201](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210403100703201.png)
 
