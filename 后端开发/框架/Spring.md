@@ -102,7 +102,7 @@ DI：依赖注入的具体实现。（注意循环依赖的问题，属性自动
           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
    
-       <context:component-scan base-package="service"></context:component-scan>//待扫描的包
+       <context:component-scan base-package="service"></context:component-scan><!--待扫描的包-->
    </beans>
    ```
 
@@ -141,6 +141,10 @@ DI：依赖注入的具体实现。（注意循环依赖的问题，属性自动
 ### AOP
 
 不改变原有代码的基础上，增强原有方法。
+
+```xml
+<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+```
 
 #### 原理
 
