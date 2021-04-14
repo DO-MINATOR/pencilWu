@@ -310,11 +310,7 @@ xmlns:tx="http://www.springframework.org/schema/tx"
 
 **传播行为propagation**
 
-|     属性     |                          描述                          |
-| :----------: | :----------------------------------------------------: |
-|   Required   | 如果有事务，则在当前事务中进行，否则新开启一个事务执行 |
-| Required_New |          无论是否有事务，均开启一个新事务执行          |
-|    Never     |              当前方法不应运行在任何事务中              |
+![image-20210414193743224](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210414193743224.png)
 
 **隔离级别isolation**
 

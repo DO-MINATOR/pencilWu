@@ -1,37 +1,3 @@
-1、springmvc是一个集成控制器，模型，视图传递的web开发框架，注重的是业务逻辑的开发，而spring是一个一站式的框架，除了包括mvc架构外，还增加了诸如IOC和AOP的编程模块，支持ORM、Redis等组件，为程序解耦并简洁开发。
-
-2、使用springmvc开发的步骤：
-
-  在web.xml中配置前端控制器（dispatcherServlet），并配置路由映射，即指定相应的路由通过该前端控制器并分发至相应的Controller；并配置contextConfigLocation，指定bean容器即spring.xml的位置。
-
-  在dispatcherServlet配置文件中，声明annotation-config和annotation-driven，使容器可以识别@Controller、@Autowired等注解，并配置controller类的扫描包，配置静态资源处理地址、jsp返回界面地址等。
-
-  接下来就是针对业务的开发了，编写controller控制器层，view、model(service)等处理层。
-
-3、常用注解：
-
-  @Controller，代表控制器，与之常用的@RequestMapping声明访问路径，如果url中含有参数，则使用@RequestParam在路由函数中指明这是一个参数，一般还会声明一个model，用于向前端界面参数对象（通过setattribute的方式）
-
-  @Service，代表服务层，与业务逻辑相关的大量业务都集中在此。
-
-  @Autowired，java bean的DI注解。
-
-  @RequestParam用于将get、post参数绑定到字段中
-
-  @PathVariable用于将url中的字符串当作一个字段传入
-
-  @ModelAttribute用于将数据集合绑定到模型对象中
-
-  @ResponseBody 类名，常用于返回json数据格式的url处理函数，可直接返回类实例，并进行json转换
-
-4、对于请求参数的获取，spring mvc提供了三种方式，一种通过注解的方式获取？后的参数（@RequestParam），一种通过httpservletrequest的形式获取，现代化的方式是通过restful api后的路径直接作文识别为参数（@PathVariable）
-
-5、如何将model返回到前端界面，modelandview 包含视图和模型两个内容，返回view通常以字符串形式查找jsp界面，而model的传递实际上是通过request.setattribute的方式进行了传递。
-
-6、通过binding操作，可以将前端传过来的数据进行模型绑定，通过@ModelAttribute （Course course）将课程信息绑定到一个模型中，进而进行持久化，需注意，表单中name的属性名字需和对象模型的属性名字相同。数据绑定包括基本类型、包装类、数组，前面的通常为一一对应，即名字相同即可，而对于用户自定义类、list、map、set这些需要封装在一个类中，进行类中属性匹配。
-
-7、spring mvc除了可以返回html给人类用户，也可以返回json数据给机器用户，使得前后端分离（restful api开发），通过在视图函数声明@ResponseBody表明该controller会返回json格式的数据。@RequestBody用于接收json数据
-
 **拦截器**
 
 1、拦截器和过滤器运行原理相似，回顾过滤器在web.xml中配置的，对于所有请求都会经过指定的过滤器，进行请求和返回的处理。（编码问题处理等）
@@ -55,7 +21,7 @@
 
 ### 特点
 
-- SpirngMVC通过一套MVC注解，让POJO成为处理请求的控制器，而无须实现任何接口
+- SpirngMVC通过一套MVC注解，只需一个@controller即可声明一个控制器。
 - 支持REST风格的URL请求
 - 采用了松散耦合可拔插组件结构，扩展性和灵活性
 
@@ -128,29 +94,28 @@
             <servlet-name>springDispatcherServlet</servlet-name>
             <url-pattern>/</url-pattern>
         </servlet-mapping>
-
-<!-- 告诉Spring MVC自己映射的请求就自己处理，不能处理的请求直接交给tomcat -->
-<mvc:default-servlet-handler />
-<!--开启MVC注解驱动模式，保证动态请求和静态请求都能访问-->
-<mvc:annotation-driven/>
 ```
 
 配置spring.xml，开启注解扫描，以及视图解析器。
 
 ```xml
- <context:component-scan base-package="com.xiao.controller"/>
+<!-- 告诉Spring MVC自己映射的请求就自己处理，不能处理的请求直接交给tomcat -->
+<mvc:default-servlet-handler />
+<!--开启MVC注解驱动模式，保证动态请求和静态请求都能访问-->
+<mvc:annotation-driven/>
+<context:component-scan base-package="com.xiao.controller"/>
     <!--配置视图解析器，拼接视图名字，找到对应的视图-->
-    <bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-        <!--前缀-->
-        <property name="prefix" value="/WEB-INF/page/"/>
-        <!--后缀-->
-        <property name="suffix" value=".jsp"/>
-    </bean>
+<bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	<!--前缀-->
+	<property name="prefix" value="/WEB-INF/page/"/>
+    <!--后缀-->
+    <property name="suffix" value=".jsp"/>
+</bean>
 ```
 
 编写controller，并实现以下注解
 
-1. @Controller：告诉Spirng这是一个控制器，交给IOC容器管理（以前是在xml中配置servlet）
+1. @Controller：告诉Spirng这是一个控制器，交给IOC容器管理
 2. @RequestMapping("/hello01")：/ 表示项目地址，当请求项目中的hello01时，返回一个/WEB-INF/page/success.jsp页面给前端
 
 ```java
@@ -197,13 +162,13 @@ public class HelloController {
    </form>
    ```
 
-高版本Tomcat会出现问题：JSPs only permit GET POST or HEAD，在页面上加上异常处理即可
+高版本Tomcat会出现问题：JSP only permit GET POST or HEAD，在页面上加上异常声明即可
 
    ```jsp
 <%@ page contentType="text/html;charset=UTF-8" language="java"  isErrorPage="true" %>
    ```
 
-###  请求参数处理
+###  请求参数获取
 
 如果请求参数和处理方法中参数名一致，则直接使用。
 
@@ -250,6 +215,7 @@ public String myMethodTest03(@PathVariable("id") String id) {
 	<input type="text" name="address.city"/>
 	<input type="submit"/>
 </form>
+<!--可级联绑定-->
 ```
 
 ```java
@@ -348,7 +314,7 @@ public String api4(ModelMap modelMap){
 	modelMap.addAttribute("msg","hello3");
 	return "map";
 }
-//上述三个对象绑定数据至前端，前端只能通过request域获取数据
+
 ```
 
 前端页面
@@ -361,10 +327,10 @@ public String api4(ModelMap modelMap){
     <title>Title</title>
 </head>
 <body>
-pageScope:  ${pageScope.msg}
-requestScope :   ${requestScope.msg}
-sessionScope:     ${sessionScope.msg}
-applicationScope:   ${applicationScope.msg}
+pageScope:  		${pageScope.msg}
+requestScope :  	${requestScope.msg}
+sessionScope:     	${sessionScope.msg}
+applicationScope:   ${applicationScope.msg}<!--上述三个对象绑定数据至前端，前端只能通过request域获取数据-->
 </body>
 </html>
 ```
@@ -372,8 +338,8 @@ applicationScope:   ${applicationScope.msg}
 为了给session中也保存上该数据，除了可以用原生的API HttpSession外，还可以通过@SessionAttributes，该注解只能表在类上，value指定key，type指定保存的类型，如：
 
 ```java
-//表示给BindingAwareModelMap中保存key为msg的数据时，在session中也保存一份
-@SessionAttributes(value = "msg")
+//表示给BindingAwareModelMap中保存key为msg的数据时，在session中也保存一份，如果保存的类型为String，则也会在session中保存。
+@SessionAttributes(value = "msg" type="String.class")
 @Controller
 public class outputController {
     @RequestMapping("/hello01")
