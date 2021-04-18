@@ -104,13 +104,6 @@
 <!--开启MVC注解驱动模式，保证动态请求和静态请求都能访问-->
 <mvc:annotation-driven/>
 <context:component-scan base-package="com.wsp.controller"/>
-    <!--配置视图解析器，拼接视图名字，找到对应的视图-->
-<bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-	<!--前缀-->
-	<property name="prefix" value="/WEB-INF/page/"/>
-    <!--后缀-->
-    <property name="suffix" value=".jsp"/>
-</bean>
 ```
 
 编写controller，并实现以下注解
@@ -348,4 +341,22 @@ public class outputController {
     }
 }
 ```
+
+### 视图解析器
+
+```xml
+<!--配置视图解析器，拼接视图名字，找到对应的视图-->
+<bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	<!--前缀-->
+	<property name="prefix" value="/WEB-INF/page/"/>
+    <!--后缀-->
+    <property name="suffix" value=".jsp"/>
+</bean>
+```
+
+当controller返回字符串时，会将字符串与prefix、suffix进行拼串得到最终的页面路径。
+
+- 可以通过return "../../index"返回prefix上级目录页面
+- 通过return "forward:index.jsp"直接返回项目目录下的主页，带有forward标识的路径不会被解析器解析。
+- 通过return "redirect:index.jsp"进行重定向。
 
