@@ -21,7 +21,7 @@
 
 ### 特点
 
-- SpirngMVC通过一套MVC注解，只需一个@controller即可声明一个控制器。
+- SpringMVC通过一套MVC注解，只需一个@controller即可声明一个控制器。
 - 支持REST风格的URL请求
 - 采用了松散耦合可拔插组件结构，扩展性和灵活性
 
@@ -103,7 +103,7 @@
 <mvc:default-servlet-handler />
 <!--开启MVC注解驱动模式，保证动态请求和静态请求都能访问-->
 <mvc:annotation-driven/>
-<context:component-scan base-package="com.xiao.controller"/>
+<context:component-scan base-package="com.wsp.controller"/>
     <!--配置视图解析器，拼接视图名字，找到对应的视图-->
 <bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 	<!--前缀-->
@@ -115,7 +115,7 @@
 
 编写controller，并实现以下注解
 
-1. @Controller：告诉Spirng这是一个控制器，交给IOC容器管理
+1. @Controller：告诉Spring这是一个控制器，交给IOC容器管理
 2. @RequestMapping("/hello01")：/ 表示项目地址，当请求项目中的hello01时，返回一个/WEB-INF/page/success.jsp页面给前端
 
 ```java
@@ -196,7 +196,7 @@ public String test03(@RequestParam("user")String username) {
 
 ```java
 //获取到{id}占位符，占位符可以在任意路径地方写{变量名}
-//@PathVariable("id") 获取请求路径哪个占位符的值
+//@PathVariable("id") 获取请求路径哪个占位符的值，请求路径名字不一定是"id"
 @RequestMapping(value = "/hello05/{id}")
 public String myMethodTest03(@PathVariable("id") String id) {
     System.out.println("路径上占位符"+id);
@@ -314,7 +314,6 @@ public String api4(ModelMap modelMap){
 	modelMap.addAttribute("msg","hello3");
 	return "map";
 }
-
 ```
 
 前端页面

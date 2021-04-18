@@ -111,6 +111,8 @@ DI：依赖注入的具体实现。（注意循环依赖的问题，属性自动
    - 对象类型注入：@Autowired（根据类型）、@Qualifier（根据名称，需与autowired一起使用）、@Resource（前两者的混合体）
    - 普通类型注入：@Value
 
+**注意：**Autowired也可用在方法上，同样spring启动后会自动运行。
+
 #### 生命周期
 
 1. 调用对象的构造器方法
@@ -303,7 +305,7 @@ xml中配置事务管理
 <!--引入名称空间tx-->
 xmlns:tx="http://www.springframework.org/schema/tx"
 <!--开启事务注解-->
-<tx:annotation-driven transactionmanager="transactionManager"></tx:annotation-driven>
+<tx:annotation-driven transaction manager="transactionManager"></tx:annotation-driven>
 ```
 
 在service中对应方法或类上直接添加@Transactional注解表示开启事务操作。
