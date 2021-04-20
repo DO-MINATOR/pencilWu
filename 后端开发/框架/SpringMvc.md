@@ -1,15 +1,3 @@
-### 拦截器
-
-1、拦截器和过滤器运行原理相似，回顾过滤器在web.xml中配置的，对于所有请求都会经过指定的过滤器，进行请求和返回的处理。（编码问题处理等）
-
-2、拦截器的配置实在mvc-dispatcher-servlet中（与web.xml过滤器不同），且需要实现HandlerInterceptor接口，并在配置文件中配置路由规则和相应的处理类
-
-3、interceptor有三个方法，分别是prehandle(有返回值，位false时直接阻断请求)posthandle（请求处理完，返回响应之前执行，可通过modelandview修改传入view的属性对象或者修改返回界面字符串）afterCompletion（响应返回后执行），它们都有Object对象，为请求者的请求目标对象，即controller类。
-
-4、多个拦截器协同工作时，按照注册的顺序执行，pre1->pre2->post2->post1->after2->after1
-
-5、过滤器基于servlet容器，过滤范围较大（包括静态资源），拦截器基于spring容器，仅过滤针对controller的请求。两者都可以减少代码复用，便于维护。
-
 ### 简介
 
 - Model（模型）： 数据模型，提供要展示的数据，：Value Object（数据Dao） 和 服务层（行为Service），提供数据和业务。
@@ -359,4 +347,48 @@ public class outputController {
 - 可以通过return "../../index"返回prefix上级目录页面
 - 通过return "forward:index.jsp"直接返回项目目录下的主页，带有forward标识的路径不会被解析器解析。
 - 通过return "redirect:index.jsp"进行重定向。
+
+### 返回Json
+
+1. 导入Jackson包
+2. 在controller上添加@ResponseBody表示直接将返回数据存入响应体中作为json。
+3. 给不需要传输的数据属性上标注@JsonIgnore
+
+同样，在controller的**方法参数**上添加@RequestBody可将请求发来的json数据绑定到bean中。
+
+### 拦截器
+
+1. 拦截器和过滤器运行原理相似，回顾过滤器在web.xml中配置的，对于所有请求都会经过指定的过滤器，进行请求和返回的处理。（编码问题处理等）
+
+2. 多个拦截器协同工作时，按照注册的顺序执行，pre1->pre2->invoke->post2->post1->after2->after1
+
+```java
+public class Interceptor implements HandlerInterceptor {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        System.out.println("1");
+        return true;
+    }
+
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        System.out.println("2");
+    }
+
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        System.out.println("3");
+    }
+}
+```
+
+```xml
+<mvc:interceptors>
+    <mvc:interceptor>
+        <mvc:mapping path="/test"/>
+        <bean class="com.wsp.interceptor.Interceptor"></bean>
+    </mvc:interceptor>
+</mvc:interceptors>
+```
+
+过滤器基于servlet容器，过滤范围较大（包括静态资源），拦截器基于spring容器，仅过滤针对controller的请求方法。两者都可以减少代码复用，便于维护。而且Filter是tomcat组件，无法直接获取IOC容器。
+
+### 异常处理
 
