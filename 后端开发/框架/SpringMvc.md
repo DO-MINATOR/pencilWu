@@ -96,7 +96,7 @@
         </servlet-mapping>
 ```
 
-配置spring.xml，开启注解扫描，以及视图解析器。
+配置spring.xml，开启注解扫描。
 
 ```xml
 <!-- 告诉Spring MVC自己映射的请求就自己处理，不能处理的请求直接交给tomcat -->
