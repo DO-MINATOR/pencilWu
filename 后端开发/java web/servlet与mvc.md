@@ -1,4 +1,4 @@
-1、servlet先于jsp诞生。基于一种路由配置和请求响应的模式开发的，类似于原生的uwsgi服务器，servlet可以独立于jsp存在，即不用编写webapp目录及其子文件，只需要extends了HttpServlet的类即可，但可以使用webxml文件为servlet初始化配置参数。
+1、servlet先于jsp诞生。基于一种路由配置和请求响应的模式开发的，类似于原生的uwsgi服务器，servlet可以独立于jsp存在，即不用编写webapp目录及其子文件，只需要extends了HttpServlet的类即可，但可以使用web.xml文件为servlet初始化配置参数。
 
 2、servlet的装载有三种情况：
 

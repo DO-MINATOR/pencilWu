@@ -5,7 +5,7 @@
 - Connector：负责接受Http请求，并分配线程处理这个请求，因此connector必然是多线程的。
 - Container：service容器，Engine>Host>Context>Wrapper，servlet程序就在Wrapper中，context提供了基本运行环境，管理servlet实例，创建、初始化、销毁等，还提供了内置对象如request、pagecontext、session、application，printwriter等。
 
-其他组件如：Logger、Listener、Filter等共同与两大核心组件提供Service服务。
+其他组件如：Listener、Filter等共同与两大核心组件提供Service服务。
 
 ### Tomcat目录
 

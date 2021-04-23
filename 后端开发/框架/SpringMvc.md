@@ -245,7 +245,7 @@ public String test03(HttpServletRequest request, HttpServletResponse response, H
 
 ### 字符集
 
-设置post请求utf-8编码
+web.xml设置post请求utf-8编码
 
 ```xml
 <filter>
@@ -315,11 +315,11 @@ applicationScope:   ${applicationScope.msg}<!--上述三个对象绑定数据�
 </html>
 ```
 
-为了给session中也保存上该数据，除了可以用原生的API HttpSession外，还可以通过@SessionAttributes，该注解只能表在类上，value指定key，type指定保存的类型，如：
+为了给session中也保存上该数据，除了可以用原生的API HttpSession外，还可以通过@SessionAttributes，该注解只能在类上，value指定key，type指定保存的类型，如：
 
 ```java
 //表示给BindingAwareModelMap中保存key为msg的数据时，在session中也保存一份，如果保存的类型为String，则也会在session中保存。
-@SessionAttributes(value = "msg" type="String.class")
+@SessionAttributes(value = "msg", type="String.class")
 @Controller
 public class outputController {
     @RequestMapping("/hello01")
@@ -345,7 +345,7 @@ public class outputController {
 当controller返回字符串时，会将字符串与prefix、suffix进行拼串得到最终的页面路径。
 
 - 可以通过return "../../index"返回prefix上级目录页面
-- 通过return "forward:index.jsp"直接返回项目目录下的主页，带有forward标识的路径不会被解析器解析。
+- 通过return "forward:index.jsp"进行请求转发。
 - 通过return "redirect:index.jsp"进行重定向。
 
 ### 返回Json
@@ -373,7 +373,7 @@ public class Interceptor implements HandlerInterceptor {
         System.out.println("2");
     }
 
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception 		{
         System.out.println("3");
     }
 }
@@ -388,7 +388,41 @@ public class Interceptor implements HandlerInterceptor {
 </mvc:interceptors>
 ```
 
-过滤器基于servlet容器，过滤范围较大（包括静态资源），拦截器基于spring容器，仅过滤针对controller的请求方法。两者都可以减少代码复用，便于维护。而且Filter是tomcat组件，无法直接获取IOC容器。
+过滤器基于servlet容器，过滤范围较大（包括静态资源），拦截器基于spring容器，仅过滤针对controller的请求方法。两者都可以减少代码复用，便于维护。而且Filter是tomcat组件，无法直接获取spring容器。
 
-### 异常处理
+### Spring和SpringMVC整合
 
+- SpringMVC用来配置网站功能相关，如视图解析器，文件上传解析器，支持Ajax，静态资源
+- Spring用于配置和业务相关，如事务控制，数据源
+
+整合方式，首先web.xmll中通过DispatcherServlet的contextConfigLocation配置spring.mvc.xml，接下来整合Spring
+
+```xml
+<context-param>
+	<param-key>contextConfigLocation</param-key>
+	<param-value>classpath:spring.xml</param-value>
+</context-param>
+<listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+</listener>
+```
+
+这些服务器中就启动了两个容器，分别是mvc容器和spring容器。为了分管不同组件，需要配置包扫描不同的组件。
+
+ spring-mvc
+
+```xml
+<context:component-scan base-package="com.wsp.controller" use-default-filters="false">
+	<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+</context:component-scan>
+```
+
+spring
+
+```xml
+<context:component-scan base-package="com.wsp.service">
+	<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+</context:component-scan>
+```
+
+当服务器中存在两个容器，默认是spring作为springmvc的父容器，即controller可以自动装配service等组件，但service等组件无法自动装配controller组件。
