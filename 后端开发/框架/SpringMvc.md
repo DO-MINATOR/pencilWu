@@ -115,7 +115,7 @@ public class HelloController {
 - method表示请求方法，GET、POST、PUT、DELETE
 
 
-### REST风格
+### RestFul
 
 一种资源+操作符的路径请求规范，因为HTTP中有四种请求方法（GET/PUT/POST/DELETE）正好对应了增删改查四种方法。相比原来的写法如addbook?id=1、querybook?id=10，使用book/1并分别结合POST、GET查询操作能够更好的表示对资源的请求。
 
