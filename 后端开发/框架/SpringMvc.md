@@ -84,7 +84,7 @@
         </servlet-mapping>
 ```
 
-配置spring.xml，开启注解扫描。
+配置springmvc-config.xml，开启注解扫描。
 
 ```xml
 <!-- 告诉Spring MVC自己映射的请求就自己处理，不能处理的请求直接交给tomcat -->
@@ -173,7 +173,7 @@ public String test03(@RequestParam("user")String username) {
 //请求路径：http://localhost:8080/hello05?user=zhangsan，则输出zhangsan
 ```
 
-将请求路径作为参数传入方法中，区别于上面的?和&参数传递
+将请求路径作为参数传入方法中，用**@PathVariable**获取，区别于上面的?和&参数传递
 
 ```java
 //获取到{id}占位符，占位符可以在任意路径地方写{变量名}
@@ -392,8 +392,8 @@ public class Interceptor implements HandlerInterceptor {
 
 ### Spring和SpringMVC整合
 
-- SpringMVC用来配置网站功能相关，如视图解析器，文件上传解析器，支持Ajax，静态资源
-- Spring用于配置和业务相关，如事务控制，数据源
+- SpringMVC用来配置网站功能相关，如视图解析器，文件上传解析器，支持Ajax，静态资源处理器
+- Spring用于配置和业务相关，如事务控制，数据源，AOP
 
 整合方式，首先web.xmll中通过DispatcherServlet的contextConfigLocation配置spring.mvc.xml，接下来整合Spring
 
