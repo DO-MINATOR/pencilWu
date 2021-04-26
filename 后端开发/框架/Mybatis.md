@@ -65,3 +65,47 @@
 
 5. 执行方法，返回bean/常数
 
+### mybatis-config.xml参数配置
+
+```xml
+<settings>
+    <setting name="mapunderscoreToCamelCase" value="true"/>
+</settings>
+```
+
+开启驼峰自动命名
+
+### ***Dao.xml配置
+
+```xml
+<mapper namespace="com.wsp.dao.SeatDao"> <!--指定某接口-->
+    <select id="getById" resultType="com.wsp.bean.Seat">
+    select * from test where id = #{id}
+    </select>
+    <delete id="delete">
+        delete from test where id=#{id}
+    </delete>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id"> <!--将自增主键自动赋值给传入的对象-->
+        insert into test(id,seat) values(#{id},#{seat})
+    </insert>
+    <update id="update">
+        update test set seat=#{seat} where id=#{id}
+    </update>
+</mapper>
+```
+
+### 参数获取
+
+- 传入一个参数，#{任意变量名均可取出}
+
+- 传入多个参数，自动封装为key='param1',value=Object的map，所以只能通过#{param1}获取第一个参数，可以通过给dao方法添加注解设置key的别名，如
+
+  ```java
+  public int deletebyIdAndName(@Param("id") int id,@Param("name") String name);
+  ```
+
+- 传入pojo对象，通过#{属性名}获取
+
+- 传入map对象，通过#{key}获取
+
+**注意：**#{}是通过预编译执行参数取值的，而${}通过拼串方式，前者可防止SQL注入，当无法进行参数取值时，使用\${}获取，如通过参数查询不同表。
