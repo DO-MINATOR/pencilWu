@@ -75,7 +75,7 @@
 
 开启驼峰自动命名
 
-### ***Dao.xml配置
+### Dao.xml配置
 
 ```xml
 <mapper namespace="com.wsp.dao.SeatDao"> <!--指定某接口-->
