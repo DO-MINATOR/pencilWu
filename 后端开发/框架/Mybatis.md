@@ -204,3 +204,34 @@ List<Student> studentByStudent = mapper.getStudentByStudent(student);
 </select>
 ```
 
+**\<choose>单分支选择**：
+
+类似if test，不过只会进入一个分支中
+
+**set结合if标签实现部分字段更新：**
+
+```xml
+<!--    public void updateStudent(Student student);-->
+<update id="updateStudent">
+    update student
+    <set>
+        <if test="name!=null and !&quot;&quot;.equals(name)">
+            name = #{name},
+        </if>
+        <if test="tid!=0">
+            t_id=#{tid}
+        </if>
+    </set>
+    <where>
+        id=#{id}
+    </where>
+</update>
+```
+
+### 缓存
+
+- 一级缓存：同一个sqlsession下共享的数据，默认启用。只要之前查询过的数据，会保存在map中，下次直接获取。
+- 二级缓存：不同session共享的数据
+
+只要执行了一次增删改操作，都会清除一级缓存。也可以手动清空，`sqlSession.clearCache()`
+
