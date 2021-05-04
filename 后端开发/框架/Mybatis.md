@@ -12,7 +12,7 @@
 
 ### 简介
 
-- 将重要步骤提取至配置文件中·，方便维护
+- 将重要步骤提取至配置文件中，方便维护
 - 将业务逻辑和sql分离，做到sql优化
 - mybatis底层就是对原生JDBC的简单封装
 
@@ -35,7 +35,7 @@
            </environment>
        </environments>
        <mappers>
-           <mapper resource="SeatDao.xml"/><!--注意该文件命名需要和dao接口类名称一致-->>
+           <mapper resource="SeatDao.xml"/>
        </mappers>
    </configuration>
    ```
@@ -65,17 +65,7 @@
 
 5. 执行方法，返回bean/常数
 
-### mybatis-config.xml参数配置
-
-```xml
-<settings>
-    <setting name="mapunderscoreToCamelCase" value="true"/>
-</settings>
-```
-
-开启驼峰自动命名
-
-### Dao.xml配置
+### Dao.xml
 
 ```xml
 <mapper namespace="com.wsp.dao.SeatDao"> <!--指定某接口-->
@@ -108,7 +98,7 @@
 
 - 传入map对象，通过#{key}获取
 
-**注意：**#{}是通过预编译执行参数取值的，而${}通过拼串方式，前者可防止SQL注入，当无法进行参数取值时，使用\${}获取，如通过参数查询不同表。
+**注意：**#{}是通过预编译执行参数取值的，而${}通过拼串方式，前者可防止SQL注入，当无法进行参数取值时，使用\${}获取，如设置参数查询不同表。
 
 ### 查询返回集合
 
@@ -120,19 +110,19 @@
 
 resutlType写List中泛型的类全限定名
 
-### 自定义类型封装规则resultMap
+### 自定义封装resultMap
 
 ```xml
 <select id="getAll" resultMap="mymap1">
     select * from test
 </select>
 <resultMap type="com.wsp.bean.Seat" id="mymap1">
-    <id column="id" property="id"></id>
-    <result column="wasd" property="ddd"></result>
+    <id column="id" property="id"></id><!--主键id-->
+    <result column="wasd" property="ddd"></result><!--普通属性result-->
 </resultMap>
 ```
 
-默认的封装规则是将列名不区分大小写的直接与属性名对应，也可以将下划线和开启驼峰命名法相匹配。此外，resultMap可以自定义列名和属性名的映射关系。此外，这种方式还可以进行级联赋值，如果bean对象中包含了另一个bean，则在result的property中使用bean.***进行赋值关联。
+默认的封装规则是将列名不区分大小写的直接与属性名对应，也可以将下划线和开启驼峰命名法相匹配。其他情况下除了使用别名外，resultMap可以自定义列名和属性名的映射关系。此外，这种方式还支持级联赋值，如果bean对象中包含了另一个bean，则在result的property中使用bean.***进行赋值关联。
 
 不过Mybatis推荐使用\<association>进行级联赋值，并使用javaType指定类型。
 对于级联属性是List集合这种，通常使用\<collection>，并用ofType指定泛型类型。
@@ -156,3 +146,61 @@ resutlType写List中泛型的类全限定名
 ```
 
 **注意：**java bean对象最好带上无参构造器，否则容易出现bug
+
+### 分步查询
+
+在一些比较复杂的业务场景下，还可以使用分步查询，即调用mapper接口最终查询的是多个表的字段，并一同封装进去。
+
+```xml
+<select id="getTeacherByIdSimple" resultMap="map2">
+    select * from teacher where id =#{id}
+</select>
+<resultMap id="map2" type="com.wsp.bean.Teacher">
+    <id property="id" column="id"></id>
+    <result property="name" column="name"></result>
+    <collection property="list" column="id" select="com.wsp.dao.StudentDao.getStudentBytIdSimple">
+        <!--select * from student where t_id = #{tid}-->
+    </collection><!--将id字段作为参数传入到另一个dao方法中进行二次查询，并将结果封装为list保存到teacher中的list属性-->
+</resultMap>
+```
+
+同时可以开启延迟加载提高效率。
+
+### 动态SQL
+
+**\<if test>**条件拼串：
+
+```xml
+<!--    public List<Student> getStudentByStudent(Student student);-->
+<select id="getStudentByStudent" resultType="com.wsp.bean.Student">
+    select id,name from student
+    <where>
+        <if test="id!=null and id!=0">
+            id=#{id}
+        </if>
+        <if test="name!=null and !&quot;&quot;.equals(name)">
+            and name like#{name}<!--注意<where>中and写在前面，这样即使前面不满足，紧接的and也会被去除掉-->
+        </if>
+    </where> 
+</select>
+```
+
+```java
+student.setName("%a%");
+List<Student> studentByStudent = mapper.getStudentByStudent(student);
+```
+
+**\<foreach>**遍历：
+
+该标签主要用于当传入的参数是list或map时
+
+```xml
+<!--    public List<Student> getStudentIn(List<Student> slist);-->
+<select id="getStudentIn" resultType="com.wsp.bean.Student">
+    select id,name from student where id in
+    <foreach collection="slist" open="(" close=")" item="item" separator=",">
+        #{item.id}
+    </foreach>
+</select>
+```
+
