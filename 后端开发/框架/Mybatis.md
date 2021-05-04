@@ -109,3 +109,50 @@
 - 传入map对象，通过#{key}获取
 
 **注意：**#{}是通过预编译执行参数取值的，而${}通过拼串方式，前者可防止SQL注入，当无法进行参数取值时，使用\${}获取，如通过参数查询不同表。
+
+### 查询返回集合
+
+```xml
+<select id="getAll" resultType="com.wsp.bean.Seat">
+    select * from test
+</select>
+```
+
+resutlType写List中泛型的类全限定名
+
+### 自定义类型封装规则resultMap
+
+```xml
+<select id="getAll" resultMap="mymap1">
+    select * from test
+</select>
+<resultMap type="com.wsp.bean.Seat" id="mymap1">
+    <id column="id" property="id"></id>
+    <result column="wasd" property="ddd"></result>
+</resultMap>
+```
+
+默认的封装规则是将列名不区分大小写的直接与属性名对应，也可以将下划线和开启驼峰命名法相匹配。此外，resultMap可以自定义列名和属性名的映射关系。此外，这种方式还可以进行级联赋值，如果bean对象中包含了另一个bean，则在result的property中使用bean.***进行赋值关联。
+
+不过Mybatis推荐使用\<association>进行级联赋值，并使用javaType指定类型。
+对于级联属性是List集合这种，通常使用\<collection>，并用ofType指定泛型类型。
+
+学生多对一老师查询案例：
+
+```xml
+<mapper namespace="com.wsp.dao.TeacherDao">
+    <select id="getTeacherById" resultMap="map1">
+        select t.* ,s.id sid ,s.name sname from teacher t left join student s on s.t_id=t.id where t.id=#{id}
+    </select>
+    <resultMap id="map1" type="com.wsp.bean.Teacher">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <collection property="list" ofType="com.wsp.bean.Student">
+            <id column="sid" property="id"></id>
+            <result column="sname" property="name"></result>
+        </collection>
+    </resultMap>
+</mapper>
+```
+
+**注意：**java bean对象最好带上无参构造器，否则容易出现bug
