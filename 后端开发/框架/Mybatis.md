@@ -1,15 +1,3 @@
-1、Mybatis的使用需要引入jar包Mybatis，配置文件Configuration.xml和Message.xml，前者是配置底层数据库驱动（JDBC）以及链接URL、用户名和密码等，后者配置数据库语句、ORM映射关系等。
-
-2、获取数据库session对象是通过SqlSessionFactoryBuilder并传入配置文件所生成的，在sqlsession执行delete等数据库修改操作以后，是需要进行提交的commit。
-
-3、如果配置好映射关系以后，session查询所返回的结果会默认封装成bean对象的，查询多条则用List包裹起来。
-
-4、对数据库执行语句进行传参，需要指明参数对象parameterType，且只能有一个，如果是普通变量，则直接指明（int、String），对象需要使用完整包名指出，List使用List，Map使用Map；对参数内部的访问，普通变量直接使用#{_parameter}，对象直接使用#{属性名 }，list使用\<foreach collection="list" item="item">
-
-5、此外mybatis还有配置一对多关系。
-
-6、Mybaits的MapperScannerConfigurer可以自动扫描Dao接口，并生成代理类，且自动打上注解（@Repository），代理类执行增删改查方法时，会去mapper.xml中扫描是否有对应方法，且参数、返回值须一致。
-
 ### 简介
 
 - 将重要步骤提取至配置文件中，方便维护
@@ -231,7 +219,75 @@ List<Student> studentByStudent = mapper.getStudentByStudent(student);
 ### 缓存
 
 - 一级缓存：同一个sqlsession下共享的数据，默认启用。只要之前查询过的数据，会保存在map中，下次直接获取。
-- 二级缓存：不同session共享的数据
+- 二级缓存：不同session共享的数据，需手动开启，且只有当session关闭后才会放入缓存。
 
 只要执行了一次增删改操作，都会清除一级缓存。也可以手动清空，`sqlSession.clearCache()`
+
+二级缓存测试
+
+```xml
+<configuration>
+    <settings>
+        <setting name="cacheEnabled" value="true"/>
+        <setting name="logImpl" value="STDOUT_LOGGING"/><!--开启log4j日志记录-->
+    </settings>
+    ...
+</configuration>
+```
+
+log4j.properties
+
+```properties
+log4j.rootLogger=DEBUG,console,FILE
+
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.threshold=INFO
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} [%5p] - %c -%F(%L) -%m%n
+
+log4j.appender.FILE=org.apache.log4j.RollingFileAppender
+log4j.appender.FILE.Append=true
+log4j.appender.FILE.File=logs/log4jtest.log
+log4j.appender.FILE.Threshold=INFO
+log4j.appender.FILE.layout=org.apache.log4j.PatternLayout
+log4j.appender.FILE.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} [%5p] - %c -%F(%L) -%m%n
+log4j.appender.FILE.MaxFileSize=10MB
+```
+
+studentDao.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsp.dao.StudentDao">
+    <cache></cache>
+	...
+</mapper>
+```
+
+**注意：**若想成功实现二级缓存，student还需要implements Serializable，以及第一个sqlsession需要close。
+
+```java
+SqlSession sqlSession = sqlSessionFactory.openSession();
+StudentDao mapper = sqlSession.getMapper(StudentDao.class);
+List<Student> studentBytIdSimple = mapper.getStudentBytIdSimple(1);
+for (Student student : studentBytIdSimple) {
+    System.out.println(student);
+}
+sqlSession.close();
+SqlSession sqlSession2 = sqlSessionFactory.openSession();
+StudentDao mapper2 = sqlSession2.getMapper(StudentDao.class);
+List<Student> studentBytIdSimple2 = mapper2.getStudentBytIdSimple(1);
+for (Student student : studentBytIdSimple2) {
+    System.out.println(student);
+}
+```
+
+![image-20210505103231062](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210505103231062.png)
+
+### 第三方缓存
+
+mybatis提供了一个缓存实现接口，可自己提供第三方缓存实现。
 
