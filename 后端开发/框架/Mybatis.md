@@ -291,3 +291,5 @@ for (Student student : studentBytIdSimple2) {
 
 mybatis提供了一个缓存实现接口，可自己提供第三方缓存实现。
 
+### 逆向
+

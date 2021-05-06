@@ -1,3 +1,17 @@
+### 导包
+
+**Spring**
+
+aop核心、ioc核心、springjdbc核心、
+
+**SpringMvc**
+
+mvc核心、文件上传下载、jstl-jsp标签库、校验码生成、json、日志包
+
+**MyBatis**
+
+核心包、log4j日志包、和spring的整合包spring-mybatis
+
 ### 常见整合问题
 
 1. 是否需要进行Spring整合SpringMvc?
@@ -78,3 +92,26 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 ![image-20210506093755597](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210506093755597.png)
 
 SpringMVC的容器中的 bean 可以来引用 Spring容器中的 bean。反之则不行
+
+### 整合MyBatis
+
+```xml
+<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
+    <property name="driverClassName" value="${jdbc.dirver}"></property>
+    <property name="url" value="${jdbc.url}"></property>
+    <property name="username" value="${jdbc.password}"></property>
+    <property name="password" value="${jdbc.password}"></property>
+</bean><!--datasource数据源-->
+<bean class="org.mybatis.spring.SqlSessionFactoryBean">
+    <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+    <property name="dataSource" value="dataSource"></property>
+    <property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+</bean><!--配置mybatis的sqlsession-->
+<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    <property name="basePackage" value="com.wsp.dao"></property>
+</bean><!--将MyBatis自动生成的dao实现类添加到IOC容器中-->
+<bean id="jdbctransactionmanager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource"></property>
+</bean>
+```
+
