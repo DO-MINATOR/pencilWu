@@ -2,7 +2,7 @@
 
 **Spring**
 
-aop核心、ioc核心、springjdbc核心、
+aop核心、ioc核心、springjdbc核心
 
 **SpringMvc**
 
@@ -20,7 +20,7 @@ mvc核心、文件上传下载、jstl-jsp标签库、校验码生成、json、�
 
 2. 必须在web.xml中配置启动spring的contextloaderlistner吗？
 
-   不是必须的，也可以在SpringMvc中加载其他spring配置文件，这样就仅有一个spring容器。
+   不是必须的，也可以在SpringMvc中加载其他spring配置文件，但这样就仅有一个spring容器。
 
 ### 整合步骤
 
@@ -51,10 +51,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
  
     <!-- 设置扫描组件的包 -->
     <context:component-scan base-package="com.atguigu.springmvc">
-		<context:exclude-filter type="annotation"
-expression="org.springframework.stereotype.Controller"/>
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 	</context:component-scan>
-
     <!-- 配置数据源, 整合其他框架, 事务等. -->
 </beans>
 ```
@@ -102,16 +100,19 @@ SpringMVC的容器中的 bean 可以来引用 Spring容器中的 bean。反之�
     <property name="username" value="${jdbc.password}"></property>
     <property name="password" value="${jdbc.password}"></property>
 </bean><!--datasource数据源-->
+
 <bean class="org.mybatis.spring.SqlSessionFactoryBean">
     <property name="configLocation" value="classpath:mybatis-config.xml"></property>
     <property name="dataSource" value="dataSource"></property>
     <property name="mapperLocations" value="classpath:mapper/*.xml"></property>
 </bean><!--配置mybatis的sqlsession-->
+
 <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
     <property name="basePackage" value="com.wsp.dao"></property>
-</bean><!--将MyBatis自动生成的dao实现类添加到IOC容器中-->
+</bean><!--将MyBatis自动生成的dao实现类添加到IOC容器中，位于mybatis-spring包下-->
+
 <bean id="jdbctransactionmanager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
     <property name="dataSource" ref="dataSource"></property>
-</bean>
+</bean><!--配置事务控制-->
 ```
 

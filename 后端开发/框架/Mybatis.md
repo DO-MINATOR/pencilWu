@@ -53,25 +53,6 @@
 
 5. 执行方法，返回bean/常数
 
-### Dao.xml
-
-```xml
-<mapper namespace="com.wsp.dao.SeatDao"> <!--指定某接口-->
-    <select id="getById" resultType="com.wsp.bean.Seat">
-    select * from test where id = #{id}
-    </select>
-    <delete id="delete">
-        delete from test where id=#{id}
-    </delete>
-    <insert id="insert" useGeneratedKeys="true" keyProperty="id"> <!--将自增主键自动赋值给传入的对象-->
-        insert into test(id,seat) values(#{id},#{seat})
-    </insert>
-    <update id="update">
-        update test set seat=#{seat} where id=#{id}
-    </update>
-</mapper>
-```
-
 ### 参数获取
 
 - 传入一个参数，#{任意变量名均可取出}
@@ -291,5 +272,5 @@ for (Student student : studentBytIdSimple2) {
 
 mybatis提供了一个缓存实现接口，可自己提供第三方缓存实现。
 
-### 逆向
+### MyBatis逆向
 

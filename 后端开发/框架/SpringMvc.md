@@ -1,6 +1,6 @@
 ### 简介
 
-- Model（模型）： 数据模型，提供要展示的数据，：Value Object（数据Dao） 和 服务层（行为Service），提供数据和业务。
+- Model（模型）： 负责处理业务逻辑，得出数据结果，：Value Object（数据Dao） 和 服务层（行为Service），提供数据和业务。
 
 - View（视图）： 负责进行模型的展示，即用户界面
 
@@ -425,4 +425,4 @@ spring
 </context:component-scan>
 ```
 
-当服务器中存在两个容器，默认是spring作为springmvc的父容器，即controller可以自动装配service等组件，但service等组件无法自动装配controller组件。
+当服务器中存在两个容器，默认是spring作为springmvc的父容器，即mvc中的controller是可以获取到父容器Spring的bean对象的。

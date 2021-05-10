@@ -205,8 +205,6 @@ Spring对JDBC的二次封装，首先是xml配置文件。
 <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 	<property name="dataSource" ref="dataSource"></property>
 </bean>
-
-<context:component-scan base-package="com.atguigu"></context:component-scan>
 ```
 
 ```java
