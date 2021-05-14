@@ -24,8 +24,6 @@ mvc核心、文件上传下载、jstl-jsp标签库、校验码生成、json、�
 
 ### 整合步骤
 
-#### 配置监听器
-
 web.xml
 
 ```xml
@@ -80,6 +78,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <property name="prefix" value="/WEB-INF/views/"/>
         <property name="suffix" value=".jsp"/>
     </bean>
+    <!--静态资源解析器-->
     <mvc:default-servlet-handler/> 
     <mvc:annotation-driven/> 
 </beans>

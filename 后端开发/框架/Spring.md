@@ -334,3 +334,32 @@ xmlns:tx="http://www.springframework.org/schema/tx"
 2. 如果是类中方法互相调用，则无法起到事务属性的作用，因为底层是通过AOP进行动态代理创建的Proxy对象，如果是类中方法调用则起不到动态代理作用，相当于只是被代理对象中方法的普通调用。
 
 ![image-20210412222115454](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210412222115454.png)
+
+### 异常处理
+
+```java
+@ExceptionHandler(value = {NullPointerException.class})
+public ModelAndView ExceptionHandler(Exception e) {
+    ModelAndView mv = new ModelAndView("ex");
+    mv.addObject("ex",e.getClass().getName());
+    return mv;
+}
+```
+
+- 给方法中添加参数Excetion用于接受异常对象。
+- 该方法无法携带Map对象，且只能通过mv返回带数据的页面。
+- 多个@ExceptionHandler都能接收该异常时，精确匹配优先。
+- 全局异常类和本类异常类都能接收该异常时，本类优先。
+
+**注意：**全局的异常类注解为@ControllerAdvice
+
+第二个异常类解析器@ResponseStatus只能标注在想要抛出的异常类上。
+
+```java
+@ResponseStatus(reason = "用户没有查询到",value = HttpStatus.NOT_ACCEPTABLE)
+public class UserNotFoundException extends RuntimeException{
+
+}
+```
+
+![image-20210514105634160](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210514105634160.png)
