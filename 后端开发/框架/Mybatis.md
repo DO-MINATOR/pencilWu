@@ -272,5 +272,30 @@ for (Student student : studentBytIdSimple2) {
 
 mybatis提供了一个缓存实现接口，可自己提供第三方缓存实现。
 
+### 延迟加载
+
+当使用\<association>查询关联对象时，可以做到属性按需加载，即java代码如果访问到了关联的属性时，才会去查询。开启方法是在mybatis.config中配置
+
+```xml
+<settings>
+    <setting name="LazyLoadingEnabled" value="true"></setting>
+    <setting name="aggressiveLazyLoading" value="false"></setting>
+</settings>
+```
+
 ### MyBatis逆向
+
+正常的mybatis创建流程是`javabean、table、dao.java、dao.xml`
+
+MBG的思想是在只给出table的情况下，自动生成javabean、dao接口和daomap查询
+
+**配置：**
+
+1. \<jdbcconnection>配置数据库连接信息
+2. \<javamodelGenerator>配置创建出bean对象所在的目录和包路径
+3. \<sqlMapGenerator>配置map查询所在的目录和包路径
+4. \<javaClientGenerator>配置dao接口生成的目录和包路径
+5. \<table>配置table表和bean对象的映射关系
+
+可通过命令行或java代码进行生成（官方文档）
 

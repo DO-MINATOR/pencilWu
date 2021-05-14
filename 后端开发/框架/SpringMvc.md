@@ -388,7 +388,7 @@ public class Interceptor implements HandlerInterceptor {
 </mvc:interceptors>
 ```
 
-过滤器基于servlet容器，过滤范围较大（包括静态资源），拦截器基于spring容器，仅过滤针对controller的请求方法。两者都可以减少代码复用，便于维护。而且Filter是tomcat组件，无法直接获取spring容器。
+过滤器基于servlet容器，过滤范围较大（包括静态资源），拦截器基于springmvc容器，仅过滤针对controller的请求方法。两者都可以减少代码复用，便于维护。而且Filter是tomcat组件，无法直接获取spring容器。
 
 ### Spring和SpringMVC整合
 
