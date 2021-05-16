@@ -2,7 +2,7 @@
 
 2、servlet的装载有三种情况：
 
-1. 请求自动装载，即用户第一次访问到该servlet的请求时，自动进行servlet的初始化、构造放方法并执行service。
+1. 请求自动装载，即用户第一次访问到该servlet的请求时，自动进行servlet的初始化、构造方法并执行service。
 
 2. 声明服务启动时装载，使用load-on-startup。
 
