@@ -27,7 +27,7 @@ mvc核心、文件上传下载、jstl-jsp标签库、校验码生成、json、�
 web.xml
 
 ```xml
-<!-- 配置启动 Spring IOC 容器的 Listener -->
+<!-- 配置启动 Spring 容器的 Listener -->
 <context-param>
     <param-name>contextConfigLocation</param-name>
     <param-value>classpath:spring.xml</param-value>
@@ -35,6 +35,21 @@ web.xml
 <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 </listener>
+
+<!-- 配置启动 SpringMvc 容器的 Listener -->
+<servlet>
+    <servlet-name>DispatcherServlet</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+    <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>WEB-INF/spring_mvc.xml</param-value>
+    </init-param>
+</servlet>
+<servlet-mapping>
+    <servlet-name>DispatcherServlet</servlet-name>
+    <url-pattern>/</url-pattern>
+</servlet-mapping>
 ```
 
 spring.xml
@@ -55,7 +70,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 </beans>
 ```
 
-springmvc.xml:
+springMvc.xml:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>

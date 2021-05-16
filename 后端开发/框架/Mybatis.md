@@ -268,8 +268,6 @@ for (Student student : studentBytIdSimple2) {
 
 ![image-20210505103231062](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210505103231062.png)
 
-### 第三方缓存
-
 mybatis提供了一个缓存实现接口，可自己提供第三方缓存实现。
 
 ### 延迟加载
