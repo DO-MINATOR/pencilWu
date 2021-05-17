@@ -295,5 +295,5 @@ MBG的思想是在只给出table的情况下，自动生成javabean、dao接口�
 4. \<javaClientGenerator>配置dao接口生成的目录和包路径
 5. \<table>配置table表和bean对象的映射关系
 
-可通过命令行或java代码进行生成（官方文档）
+可通过命令行或java代码进行生成（查阅官方文档）
 
