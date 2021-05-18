@@ -42,7 +42,7 @@ redis采用单线程+IO复用技术
 - 查看当前数据库key数量：`dbsize`
 - 清空当前库：`flushdb`
 - 清空全部库：`flushall`
-- `keys *`查看当前库所有key  (匹配：keys *1)
+- `keys *`查看当前库所有key
 - `exists key`判断某个key是否存在
 - `type key` 查看你的key是什么类型
 - `del key`    删除指定的key数据
@@ -52,10 +52,9 @@ redis采用单线程+IO复用技术
 
 ### String
 
-最基础的数据类型，可以存放二进制数据，此时value大小不能超过512M。
+最基础的数据类型，可以存放二进制数据，数据结构为简单动态字符串，类似于ArrayList，采用动态扩容方式，但大小不超过512M。
 
-set  \<key>\<value>添加键值对
-
+- set  \<key>\<value>添加键值对
 - *NX：当数据库中key不存在时，可以将key-value添加数据库
 - *XX：当数据库中key存在时，可以将key-value添加数据库，与NX参数互斥
 - *EX：key的超时秒数
@@ -74,8 +73,6 @@ set  \<key>\<value>添加键值对
 - getrange \<key><起始位置><结束位置>
 - setrange \<key><起始位置>\<value>
 - getset \<key>\<value>以新换旧，设置了新值同时获得旧值。
-
-数据结构为简单动态字符串，类似于ArrayList，采用动态扩容方式。
 
 ### List
 
@@ -105,7 +102,7 @@ value是set类型，相比list，可以自动去重，底层实际上是value为
 - sismember \<key>\<value>判断集合\<key>是否为含有该\<value>值，有1，没有0
 - scard\<key>返回该集合的元素个数。
 - srem \<key>\<value1>\<value2> .... 删除集合中的某个元素。
-- spop \<key>**随机从该集合中吐出一个值。**
+- spop \<key>随机从该集合中吐出一个值。
 - srandmember \<key>\<n>随机从该集合中取出n个值。不会从集合中删除 。
 - smove \<source>\<destination>value把集合中一个值从一个集合移动到另一个集合
 - sinter \<key1>\<key2>返回两个集合的交集元素。
@@ -114,7 +111,7 @@ value是set类型，相比list，可以自动去重，底层实际上是value为
 
 ### Hash
 
-value是hashmap类型，适用于存储非结构化对象。同样，当存储数量较少时，使用ziplist（压缩列表），map对象多时，改为hashtable。
+value是hashmap，存储对象类型。同样，当存储数量较少时，使用ziplist（压缩列表），map对象多时，改为hashtable。
 
 - hset \<key>\<field>\<value>给\<key>集合中的 \<field>键赋值\<value>
 - hget \<key1>\<field>从\<key1>集合\<field>取出 value 
@@ -127,3 +124,20 @@ value是hashmap类型，适用于存储非结构化对象。同样，当存储�
 
 ### Zset
 
+value是map\<String,Double>，根据权重值进行排序，通过跳表可以加速查询数据。
+
+![image-20210518093545521](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210518093545521.png)
+
+- zadd \<key>\<score1>\<value1>\<score2>\<value2>…
+- 将一个或多个 member 元素及其 score 值加入到有序集 key 当中。
+- zrange \<key>\<start>\<stop> [WITHSCORES]  
+- 返回有序集 key 中，下标在\<start>\<stop>之间的元素
+- 带WITHSCORES，可以让分数一起和值返回到结果集。
+- zrangebyscore key minmax [withscores] [limit offset count]
+- 返回有序集 key 中，所有 score 值介于 min 和 max 之间(包括等于 min 或 max )的成员。有序集成员按 score 值递增(从小到大)次序排列。 
+- zrevrangebyscore key maxmin [withscores] [limit offset count]        
+- 同上，改为从大到小排列。 
+- zincrby \<key>\<increment>\<value>   为元素的score加上增量
+- zrem \<key>\<value>删除该集合下，指定值的元素
+- zcount \<key>\<min>\<max>统计该集合，分数区间内的元素个数 
+- zrank \<key>\<value>返回该值在集合中的排名，从0开始。
