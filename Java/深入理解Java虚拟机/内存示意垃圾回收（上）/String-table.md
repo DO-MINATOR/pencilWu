@@ -46,7 +46,7 @@ ublic void test3() {
 
 ### String底层结构HashTable
 
-字符串常量池是不会存储相同内容的字符串，String的String Pool是一个固定大小的Hashtable，默认值大小长度是1009。如果放进String Pool的String非常多，就会造成Hash冲突严重，从而导致链表会很长，而链表长了后造成的影响就是当调用String.intern()方法时性能会大幅下降。
+StringTable是不会存储相同内容的字符串，是一个固定大小的Hashtable，默认值大小长度是1009。如果放进String Pool的String非常多，就会造成Hash冲突严重，从而导致链表会很长，而链表长了后造成的影响就是当调用String.intern()方法时性能会大幅下降。
 
 ```java
 public class StringTest2 {
@@ -242,7 +242,7 @@ public class StringNewTest {
 
 ![img](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/a5eb5d8adac93afb8fc8071b12864fd0.png)
 
-1. 变量相加，先创建StringBuilder()
+1. 变量相加，先创建StringBuilder()，1次
 2. 两此new String()，共4次
 3. append之后tostring中有个new string，但这个new string不会保存string table，因此只有1次
 
@@ -252,7 +252,7 @@ public class StringNewTest {
 public class StringIntern {
     public static void main(String[] args) {
         String s = new String("1");
-        s.intern();//这方法其实没啥屌用，调用此方法之前，字符串常量池中已经存在"1"
+        s.intern();//这方法其实没啥用，调用此方法之前，字符串常量池中已经存在"1"
         String s2 = "1";
         /*
             jdk6：false   jdk7/8：false
