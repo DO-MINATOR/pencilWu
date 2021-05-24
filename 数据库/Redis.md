@@ -36,6 +36,22 @@ redis采用单线程+IO复用技术
 
 关闭服务命令：`redis-cli shutdown`
 
+**redis.config**
+
+- 默认情况bind=127.0.0.1只能接受本机的访问请求
+- protected-mode：将本机访问保护模式设置no
+- port：默认端口号6379
+- daemonize：是否设置为守护进程
+- maxmemory：最大内存空间，如果超出内存空间，且不允许移除或没有设置移除规则，则报错。
+- maxmemory-policy：移除规则
+  1. volatile-lru：使用LRU算法移除key，只对设置了过期时间的键；（最近最少使用）
+  2. allkeys-lru：在所有集合key中，使用LRU算法移除key
+  3. volatile-random：在过期集合中移除随机的key，只对设置了过期时间的键
+  4. allkeys-random：在所有集合key中，移除随机的key
+  5. volatile-ttl：移除那些TTL值最小的key，即那些最近要过期的key
+  6. noeviction：不进行移除。针对写操作，只是返回错误信息
+- maxmemory-samples：LRU和最小ttl算法非精确算法，因此只会检查samples个样本。
+
 ### 基础命令
 
 - 切换数据库：`select id`
@@ -50,7 +66,9 @@ redis采用单线程+IO复用技术
 - `expire key 10`  10秒钟：为给定的key设置过期时间
 - `ttl key` 查看还有多少秒过期，-1表示永不过期，-2表示已过期
 
-### String
+### 五大数据类型
+
+#### String
 
 最基础的数据类型，可以存放二进制数据，数据结构为简单动态字符串，类似于ArrayList，采用动态扩容方式，但大小不超过512M。
 
@@ -74,7 +92,7 @@ redis采用单线程+IO复用技术
 - setrange \<key><起始位置>\<value>
 - getset \<key>\<value>以新换旧，设置了新值同时获得旧值。
 
-### List
+#### List
 
 key-value中的value类型为list，实际上是双向链表。且当list元素较少时会用连续内存分配ziplist，并没有前后指针，当元素个数增多时，才会采取多个ziplist合并为一个quicklist。
 
@@ -92,7 +110,7 @@ key-value中的value类型为list，实际上是双向链表。且当list元素�
 - lrem \<key>\<n>\<value>从左边删除n个value(从左到右)
 - lset\<key>\<index>\<value>将列表key下标为index的值替换成value
 
-### Set
+#### Set
 
 value是set类型，相比list，可以自动去重，底层实际上是value为null的hash表，时间复杂度为O(1)。
 
@@ -109,7 +127,7 @@ value是set类型，相比list，可以自动去重，底层实际上是value为
 - sunion \<key1>\<key2>返回两个集合的并集元素。
 - sdiff \<key1>\<key2>返回两个集合的**差集**元素(key1中的，不包含key2中的)
 
-### Hash
+#### Hash
 
 value是hashmap，存储对象类型。同样，当存储数量较少时，使用ziplist（压缩列表），map对象多时，改为hashtable。
 
@@ -122,7 +140,7 @@ value是hashmap，存储对象类型。同样，当存储数量较少时，使�
 - hincrby \<key>\<field>\<increment>为哈希表 key 中的域 field 的值加上增量 1  -1
 - hsetnx \<key>\<field>\<value>将哈希表 key 中的域 field 的值设置为 value ，当且仅当域 field 不存在 
 
-### Zset
+#### Zset
 
 value是map\<String,Double>，根据权重值进行排序，通过跳表可以加速查询数据。
 
@@ -141,3 +159,45 @@ value是map\<String,Double>，根据权重值进行排序，通过跳表可以�
 - zrem \<key>\<value>删除该集合下，指定值的元素
 - zcount \<key>\<min>\<max>统计该集合，分数区间内的元素个数 
 - zrank \<key>\<value>返回该值在集合中的排名，从0开始。
+
+### 发布订阅
+
+消息通信模式
+
+- 订阅者：subscribe channel1
+- 发布者：publish channel1 hello
+
+### Jedis
+
+java操纵redis的包
+
+```java
+Jedis jedis = new Jedis("192.168.137.3",6379);
+String pong = jedis.ping();
+System.out.println("连接成功："+pong);
+```
+
+### 事务
+
+Redis事务是一个单独的隔离操作，事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。这样串联多个命令，防止别的命令来插队。
+
+- Mutli：创建队列，但不会立即执行。出错则全部不执行。
+- discard：销毁队列。
+- exec：执行队列。一个错误不会影响其他的执行。
+
+三特性：
+
+- 单独的隔离操作：所有命令序列化、按需执行
+- 没有隔离级别
+- 没有原子性，执行出错不会影响别的命令
+
+但是不同事务中的命令有可能会冲突，例如对同一个value进行增减操作。
+
+由此引出锁机制
+
+### 乐观/悲观锁
+
+- 悲观锁：每次去拿数据的时候都认为别人会修改，所以每次在拿数据的时候都会上锁，这样别人想拿这个数据就会block直到它拿到锁。传统的关系型数据库里边就用到了很多这种锁机制，比如行锁，表锁等，读锁，写锁等，都是在做操作之前先上锁。
+- 乐观锁：每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据，可以使用版本号机制(版本号的修改是序列化的)。乐观锁适用于多读的应用类型，这样可以提高吞吐量。Redis就是利用这种check-and-set机制实现事务的。
+
+在执行multi之前，先执行watch key1 [key2],可以监视一个(或多个) key ，如果在事务执行之前这个(或这些) key 被其他命令所改动，那么事务将被打断。
