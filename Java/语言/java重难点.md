@@ -1,4 +1,4 @@
-### 1.枚举类Enum
+### 1.Enum
 
 当定义有限个变量，且变量之间有一定次序关系时，使用枚举类创建final对象较为合适。
 
@@ -72,7 +72,7 @@ enum Season {
 
 ```java
 String s = "java";//字符串常量池
-s = new String("java");//堆空间地址值
+s = new String("java");//堆空间地址值,同时也会在stringtable中创建一个该字符串
 ```
 
 ![image-20210315094812330](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210315094812330.png)
@@ -82,7 +82,7 @@ s = new String("java");//堆空间地址值
 **字符串+操作：**
 
 - 二者都是显式字面量相加，因此编译期间替换，替换为字符串常量池
-- 如果其中之一是变量形式出现，则通过new stringbuilder进行append最终进行tostring，tostring类似new string，但不完全一样。
+- 如果其中之一是变量形式出现，则通过new stringbuilder进行append最终进行tostring，tostring类似new string，但不完全一样，区别在于会不会在stringtable中也创建一个相同字符串。
 
 ![image-20210315095521252](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210315095521252.png)
 
@@ -94,7 +94,7 @@ s = new String("java");//堆空间地址值
 
 stringbuffer任何关于修改字符串的方法都是在原有value基础上进行修改，时空效率上比String较高。
 
-方法链设计，如调用append方法后返回this对象，这样可以依次执行append。
+方法链设计，如调用append方法后返回this对象。
 
 **Stringbuilder非安全-效率高**
 
@@ -121,7 +121,7 @@ list1 = list2;//×，由于list2本来规定只能存放String类型变量，但
 
 List<String> list1 = new ArrayList<>();
 ArrayList<String> list2 = new ArrayList<>();
-list1 = list2;//√，这种写法可以，因为List是ArrayList的夫类，肯定包含子类所有的属性和方法。
+list1 = list2;//√，这种写法可以，因为List是ArrayList的父类，肯定包含子类所有的属性和方法。
 ```
 
 **通配符"?"**
@@ -330,7 +330,7 @@ serialVersionUID的作用是：如果没有显式指明该值，如果当类被�
 
 - 对象实现serializable接口，属性递归实现serializable接口
 - 对象提供一个serialVersionUID类静态常量
-- 如果不想某些属性被序列化，除了static修饰的静态变量意外，用transient修饰的变量也不会被序列化。
+- 如果不想某些属性被序列化，除了static修饰的静态变量以外，用transient修饰的变量也不会被序列化。
 
 现在的应用传输对象数据一般都使用json。
 
@@ -612,9 +612,7 @@ produce lining-cloth
 通用方法2*/
 ```
 
-扩充的实现逻辑就在handler对象的invoke方法中，由于通用方法固定，因此动态性就体现在传入的object。
-
-无论是静态代理还是动态代理，被代理对象和代理对象都实现同样的接口，最终通过代理类调用原来的同名方法。
+扩充的实现逻辑就在handler对象的invoke方法中，每次调用接口中的方法时，都会执行该invoke方法，不同方法可通过判断method名称进行逻辑扩充。动态代理的动态性体现在没有显示定义代理类，可通过传入不同的Handler类进行不同方面的增强。
 
 ### 8.JDK8新特性
 
