@@ -62,4 +62,4 @@ param动作：常和foward动作一起使用
 
 ![image-20200530101754184](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20200530101701423.png)
 
-**注意：**第一次访问jsp页面时，实际上tomcat会自动将其编码为java，并编译为class文件，通过反射方式执行service方法。另外，由于jsp包括session九大内置对象，因此初次访问是也会创建session对象，并返回带有sessionID的cookie。
+**注意：**第一次访问jsp页面时，实际上tomcat会自动将其编码为java，并编译为class文件，通过反射方式执行service方法。另外，由于jsp包括session九大内置对象，因此初次访问是也会创建session对象，并返回带有sessionID的cookie，而访问html不会创建session对象。

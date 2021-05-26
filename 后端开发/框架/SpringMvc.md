@@ -395,7 +395,7 @@ public class Interceptor implements HandlerInterceptor {
 - SpringMVC用来配置网站功能相关，如视图解析器，文件上传解析器，支持Ajax，静态资源处理器
 - Spring用于配置和业务相关，如事务控制，数据源，AOP
 
-整合方式，首先web.xmll中通过DispatcherServlet的contextConfigLocation配置spring.mvc.xml，接下来整合Spring
+整合方式，首先web.xml中通过DispatcherServlet的contextConfigLocation配置spring.mvc.xml，接下来整合Spring
 
 ```xml
 <context-param>
