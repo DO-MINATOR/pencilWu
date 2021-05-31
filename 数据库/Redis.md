@@ -250,3 +250,36 @@ AOF每次持久化时，都会将记录直接追加到文件末尾，只有当�
 写时复制技术有可能导致短暂的响应延迟，因此建议Master采取AOF，Slave采取RDB。
 
 ### 主从复制
+
+Master写，Slave读。通过读写分离，实现性能扩展，以及容灾的快速恢复（Salve因为有多个，因此读服务器可以自动完成切换，而Master只有一个，因此主机如果想要实现容灾备份的话，需要集群）
+
+- 创建多个redis-6379.conf、redis-6380.conf、redis-6381.conf
+  - include /redis/redis.conf，引入完整配置
+  - pidfile /var/run/redis_6379.pid
+  - port 6379
+  - dbfilename dump6379.rdb
+- 启动三服务，redis-server redis-6379.conf
+- info replication查看服务器属性
+- slaveof 127.0.0.1 6379，在6380、6381上配置从属信息
+
+#### 一主二仆
+
+- 主动复制：当salve初次连接到master时，会进行主动的全量更新（slave挂掉重启后依然可以完成）
+- 被动传输：在master每次更新数据后，将增量信息主动发送给slave
+
+#### 薪火相传
+
+![image-20210528110151054](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210528110151054.png)
+
+中间的slave既是从机又是主机，后面的从机通过slaveof命令配置中间节点为其master，重新连接时，将进行新的全量更新。
+
+#### 反客为主
+
+slaveof no one，升级为主机
+
+#### 复制原理
+
+
+
+### 哨兵模式
+
