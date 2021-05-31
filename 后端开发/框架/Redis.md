@@ -333,11 +333,13 @@ cluster-config-file nodes-6379.conf
 cluster-node-timeout 15000
 ```
 
-启动6个服务，并通过集群方式进行管理。在redis安装目录下通过
+redis-server启动6个服务后，再通过集群方式进行管理。在redis安装目录下通过
 
 `redis-cli --cluster create --cluster-replicas 1 192.168.224.1:6379 192.168.224.1:6380 192.168.224.1:6381 192.168.224.1:6389 192.168.224.1:6390 192.168.224.1:6391`
 
-客户端连接方式如果采用以前的单点登录，则会发生操作转移，因此建议使用集群登录命令，`redis-cli -p -c 6379`，这样，如果遇到数据需要在别的机器上进行写操作时，则会自动切换到对应主机。
+![image-20210531152608541](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210531152609585.png)
+
+客户端连接方式如果采用以前的单点登录，则会发生操作转移，因此建议使用集群登录命令，`redis-cli -c -p 6379`，这样，如果遇到数据需要在别的机器上进行写操作时，则会自动切换到对应主机。
 
 #### 插槽Slot
 
@@ -349,9 +351,59 @@ cluster countkeysinslot 4847 //返回4847号slot中拥有的keys的数量
 cluster getkeysinslot 4847 10 //返回4847号slot中10个key
 ```
 
+**注意：**上述命令需要slot段对应的节点上(Master/Slave)执行才有效
+
 #### 故障恢复
 
 如果Master挂掉后，对应的Slave会自动晋升为Master，原来的Master恢复后，自动变为Slave。如果某一段slot的Master和Slave都挂掉后，会根据cluster-require-full-coverage对应的配置是否为yes决定集群服务是否还能运行，如果还能运行，则当前数据段无法工作。
 
 #### Jedis集群
+
+```java
+@Test
+public void test01() {
+    HostAndPort hostAndPort = new HostAndPort("192.168.137.181", 6379);
+    JedisCluster jedisCluster = new JedisCluster(hostAndPort);
+    String k1 = jedisCluster.get("k1");
+    System.out.println(k1);
+}
+```
+
+java客户端也可以通过无中心化集群连接方式进行连接。
+
+### 其他问题
+
+#### 缓存穿透
+
+大量（非法）请求打在服务端上，先查看redis缓存发现没有数据，则数据库压力增大。
+
+解决方案：
+
+- 布隆过滤器，限制请求，阻断在服务器外。
+- 设置空值，先将数据返回，再及时更新redis，防止不一致情况。
+- 数据预热。
+
+![image-20210531165535710](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210531165535710.png)
+
+将数据通过若干hash函数映射到一维数组空间，增加和查询时间复杂度为O(K)，k为hash函数个数，如果查询到有一个不为1，则一定不存在，如果全为1，则有可能存在，原因在于hash冲突。减少hash冲突的方法是增加hash函数个数和一维数组长度，这在redis集成的布隆过滤器中可通过参数配置。
+
+#### 缓存击穿
+
+针对极个别热点数据，突然某一个时刻该缓存过期，导致大量线程访问数据库。
+
+解决方案：
+
+- 根据监控延长热点数据TTL
+- 设置多级缓存，变相增加缓存有效时间
+- 分布式锁，限制单个key的访问只能有一个线程去查数据库，结果缓存后释放锁。
+
+#### 缓存雪崩
+
+大量热点数据同一时间失效，导致大量请求访问到数据库。
+
+解决方案：
+
+- 异地多活，部署集群，扩容、减负
+- 限流降级，关闭其他不相关服务，同时针对热点数据访问进行降级，比如只有一个线程访问数据库，之后立即缓存。
+- 设置随机过期时间，尽量让这些热点数据不在同一时刻过期。
 
