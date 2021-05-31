@@ -275,11 +275,83 @@ Master写，Slave读。通过读写分离，实现性能扩展，以及容灾的
 
 #### 反客为主
 
-slaveof no one，升级为主机
+slaveof no one，升级为主机，一般在Master断掉后，自选一台Slave晋升为Master，其余Slave连接上该Master。
 
 #### 复制原理
 
-
+- Slave每次在连接的第一次时，都会发送sync命令给服务器，请求全量更新。
+- 后续的修改操作，Master会发送增量信息给Slave。
 
 ### 哨兵模式
+
+反客为主的自动化实现，通过配置哨兵，自动监测Master是否宕机，如果宕机，则按照一定规则选举一台Slave成为Master，之后其余Slave以及重启后的旧的Master将变为Slaves。
+
+- 配置sentinel.conf，添加命令`sentinel monitor mymaster 127.0.0.1 6379 1`，mymaster为哨兵的名称，1为至少需要多少个哨兵同意的数量。
+- 启动是哨兵，`redis-sentinel ./sentinel.conf`
+
+选举规则是通过
+
+1. 优先级选取的，在redis.conf中的replic-priority上配置，数字越低优先级越高
+2. 偏移量越大越好，（获取数据最全的）
+3. runid越小越好，随机生成。
+
+```java
+static Jedis getFromPool() {
+    Set<String> sentinelSet = new HashSet<String>();
+    sentinelSet.add("192.168.137.181:26379");
+    JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+    jedisPoolConfig.setMaxTotal(20);
+    jedisPoolConfig.setBlockWhenExhausted(true);
+    jedisPoolConfig.setMaxWaitMillis(2000);
+    jedisPoolConfig.setTestOnBorrow(true);
+    jedisSentinelPool = new JedisSentinelPool("mymaster", sentinelSet, jedisPoolConfig);
+    Jedis resource = jedisSentinelPool.getResource();
+    return resource;
+}
+```
+
+通过sentinel（哨兵服务）获取jedis连接对象，这样Master挂掉后，又会重新连接上新的Master。
+
+### 集群
+
+解决生产环境中的容量、写操作压力分担。通过无中心化集群，在连接集群服务时，可自动将请求打在不同服务器上。
+
+- 水平扩容，如果有N个Master，则每个Master负责总数据量1/N的业务量。
+- 分区备份，Master和对应的Slave会分配在不同的IP下，防止整个挂掉。
+
+这里以6个服务为例，6379、6380、6381、6389、6390、6391。
+
+redis-6379.conf
+
+```conf
+include /redis/redis.conf
+port 6379
+pidfile "/var/run/redis_6379.pid"
+dbfilename "dump6379.rdb"
+cluster-enabled yes
+cluster-config-file nodes-6379.conf
+cluster-node-timeout 15000
+```
+
+启动6个服务，并通过集群方式进行管理。在redis安装目录下通过
+
+`redis-cli --cluster create --cluster-replicas 1 192.168.224.1:6379 192.168.224.1:6380 192.168.224.1:6381 192.168.224.1:6389 192.168.224.1:6390 192.168.224.1:6391`
+
+客户端连接方式如果采用以前的单点登录，则会发生操作转移，因此建议使用集群登录命令，`redis-cli -p -c 6379`，这样，如果遇到数据需要在别的机器上进行写操作时，则会自动切换到对应主机。
+
+#### 插槽Slot
+
+一个 Redis 集群包含 16384 个插槽（hash slot）， 数据库中的每个键都属于这 16384 个插槽的其中一个， 集群使用公式 CRC16(key) % 16384 来计算键 key 属于哪个槽。每个slot可能发生“hash”冲突。
+
+```txt
+cluster keyslot cust //返回key cust所在的slot号
+cluster countkeysinslot 4847 //返回4847号slot中拥有的keys的数量
+cluster getkeysinslot 4847 10 //返回4847号slot中10个key
+```
+
+#### 故障恢复
+
+如果Master挂掉后，对应的Slave会自动晋升为Master，原来的Master恢复后，自动变为Slave。如果某一段slot的Master和Slave都挂掉后，会根据cluster-require-full-coverage对应的配置是否为yes决定集群服务是否还能运行，如果还能运行，则当前数据段无法工作。
+
+#### Jedis集群
 
