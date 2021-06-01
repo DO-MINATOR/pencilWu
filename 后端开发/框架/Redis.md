@@ -409,3 +409,60 @@ public void test01() {
 
 ### 分布式锁
 
+针对秒杀系统中，大量请求针对同一个库存进行-1操作需要用到分布式锁机制。
+
+如果是在单机系统中，通过JVM内置的synchronized锁即可保证操作的原子性，但在集群环境下，普通的锁无法保证操作的原子性，有可能有多个请求同时在不同服务器上执行库存-1操作，因此需要分布式锁提供保证。
+
+已知的分布式锁的实现，有redis和zookeeper，前者性能最高，但在redis集群架构下会出现主从不一致情况，可能会出现bug，后者安全性最高，但性能略低。
+
+```java
+@RequestMapping("/deduct_stock")
+public String deduckStock() {
+    String lock_key = "product_001";
+    String clientId = UUID.randomUUID().toString();
+    RedisTemplate<String, Object> redisTemplate = null;
+    try {
+        redisTemplate = redisTemp.getRedisTemplate();
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(lock_key, clientId, 10, TimeUnit.SECONDS);
+        if (!result) {
+            return "error";
+        }
+        int stock = Integer.parseInt((String) redisTemplate.opsForValue().get("stock"));
+        if (stock > 0) {
+            int realStock = stock - 1;
+            redisTemplate.opsForValue().set("stock", realStock + "");
+            System.out.println("扣除成功，剩余库存：" + realStock + "");
+        } else {
+            System.out.println("库存不足");
+        }
+    } finally {
+        if (clientId.equals(redisTemplate.opsForValue().get(lock_key))) {
+            redisTemplate.delete(lock_key);
+        }
+    }
+    return "succ";
+}
+```
+
+这是一段接受客户端请求减库存的代码，其中用到了分布式锁。其原理大致如下：
+
+![image-20210601170806214](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210601170806214.png)
+
+由于redis的key只有一个，因此通过setnx命令可以上一个简单的排他锁，此时其他请求会阻塞在获取该锁的地方。如果只是简单的排他锁，还会出现一些bug：
+
+> 如果业务中间出现错误或者服务器宕机，会出现永远无法释放锁的情况。
+
+通过设置finally强制释放锁，以及设置锁过期时间。
+
+> 如果业务执行过程中，锁自动释放导致其他请求进来，违背了原子性。
+
+为每一个进来的请求新开一个线程，定期检查该锁的存货情况，如果业务执行完毕前，该锁还存活，则延长其过期时间。
+
+> 如果释放掉了其他请求的锁，也会导致锁失效。
+
+设置锁的value为请求初始产生的UUID，并在释放时检查value是否一致，否则不释放。
+
+`redisson`已经集成了上述功能。
+
+另外，之前谈到的不一致问题在于Redis如果是主从架构的话，如果在Master收到锁命令后还没来得及向从服务器发送写命令就导致宕机切换的话，会导致这次上锁失败。可以考虑zookeeper一类拥有更强一致性的分布式框架。
+
