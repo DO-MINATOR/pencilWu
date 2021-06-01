@@ -362,14 +362,14 @@ cluster getkeysinslot 4847 10 //返回4847号slot中10个key
 ```java
 @Test
 public void test01() {
-    HostAndPort hostAndPort = new HostAndPort("192.168.137.181", 6379);
+    HostAndPort hostAndPort = new HostAndPort("192.168.137.181", 6379);//任意节点都可
     JedisCluster jedisCluster = new JedisCluster(hostAndPort);
     String k1 = jedisCluster.get("k1");
     System.out.println(k1);
 }
 ```
 
-java客户端也可以通过无中心化集群连接方式进行连接。
+无中心化集群连接方式。
 
 ### 其他问题
 
@@ -406,4 +406,6 @@ java客户端也可以通过无中心化集群连接方式进行连接。
 - 异地多活，部署集群，扩容、减负
 - 限流降级，关闭其他不相关服务，同时针对热点数据访问进行降级，比如只有一个线程访问数据库，之后立即缓存。
 - 设置随机过期时间，尽量让这些热点数据不在同一时刻过期。
+
+### 分布式锁
 
