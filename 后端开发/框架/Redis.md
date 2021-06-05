@@ -452,7 +452,7 @@ public String deduckStock() {
 
 > 如果业务中间出现错误或者服务器宕机，会出现永远无法释放锁的情况。
 
-通过设置finally强制释放锁，以及设置锁过期时间。
+通过设置finally强制释放锁，以及设置锁过期时间，注意使用原子操作设置value和expire。
 
 > 如果业务执行过程中，锁自动释放导致其他请求进来，违背了原子性。
 
@@ -465,4 +465,35 @@ public String deduckStock() {
 `redisson`已经集成了上述功能。
 
 另外，之前谈到的不一致问题在于Redis如果是主从架构的话，如果在Master收到锁命令后还没来得及向从服务器发送写命令就导致宕机切换的话，会导致这次上锁失败。可以考虑zookeeper一类拥有更强一致性的分布式框架。
+
+### 其他
+
+#### ACL用户权限控制
+
+`acl list`查看当前用户权限
+
+![image-20210605092930210](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210605092930210.png)
+
+`acl setuser user1`创建user1
+
+![image-20210605093039749](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210605093039749.png)
+
+`acl setuser user2 on >password ~cached:* +get`创建并启用user2，设置密码，赋予get权限（需要key中含有cached字符串）
+
+![image-20210605093228202](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210605093228202.png)
+
+#### IO线程复用
+
+Redis 的多线程部分只是用来处理网络数据的读写和协议解析，执行命令仍然是单线程。之所以这么设计是不想因为多线程而变得复杂，需要去控制 key、lua、事务，LPUSH/LPOP 等等的并发问题。
+
+另外，多线程IO默认也是不开启的，需要再配置文件中配置
+
+```config
+io-threads-do-reads yes 
+io-threads 4
+```
+
+#### 内部支持cluster
+
+之前老版Redis想要搭集群需要单独安装ruby环境，Redis 5 将 redis-trib.rb 的功能集成到 redis-cli。另外官方 redis-benchmark 工具开始支持 cluster 模式了，通过多线程的方式对多个分片进行压测。可直接启动集群。
 
