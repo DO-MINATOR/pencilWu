@@ -24,7 +24,7 @@ Spring是一个大生态，覆盖了：
 - 一个大型应用拆分为一组小型服务
 - 每个服务运行在自己的容器中，独立部署和升级
 - 使用http轻量级交互方式
-- 全自动话化配置，虚拟化最大效率利用集群资源
+- 全自动化配置，虚拟化最大效率利用集群资源
 - 去中心化，服务自治，可以使用不同语言开发小应用。
 
 **分布式架构风格**
@@ -481,7 +481,7 @@ public class LoginInterceptor implements HandlerInterceptor {
      * 页面渲染以后
      */
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception{
         log.info("afterCompletion执行异常{}",ex);
     }
 }
