@@ -74,7 +74,7 @@
             <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
             <init-param>
                 <param-name>contextConfigLocation</param-name>
-                <param-value>classpath:springmvc-config.xml</param-value><!--导入spring配置文件-->
+                <param-value>classpath:springmvc-config.xml</param-value><!--导入springmvc配置文件-->
             </init-param>
             <load-on-startup>1</load-on-startup>
         </servlet>
@@ -117,7 +117,7 @@ public class HelloController {
 
 ### RestFul
 
-一种资源+操作符的路径请求规范，因为HTTP中有四种请求方法（GET/PUT/POST/DELETE）正好对应了增删改查四种方法。相比原来的写法如addbook?id=1、querybook?id=10，使用book/1并分别结合POST、GET查询操作能够更好的表示对资源的请求。
+URI对应资源标识，因为HTTP中有四种请求方法（GET/PUT/POST/DELETE）正好对应了增删改查四种方法。相比原来的写法如addbook?id=1、querybook?id=10，使用book/1并分别结合POST、GET查询操作能够更好的表示对资源的操作。
 
 实现步骤：
 
@@ -177,7 +177,7 @@ public String test03(@RequestParam("user")String username) {
 
 ```java
 //获取到{id}占位符，占位符可以在任意路径地方写{变量名}
-//@PathVariable("id") 获取请求路径哪个占位符的值，请求路径名字不一定是"id"
+//@PathVariable("id") 获取请求路径哪个占位符的值
 @RequestMapping(value = "/hello05/{id}")
 public String myMethodTest03(@PathVariable("id") String id) {
     System.out.println("路径上占位符"+id);
@@ -389,40 +389,3 @@ public class Interceptor implements HandlerInterceptor {
 ```
 
 过滤器基于servlet容器，过滤范围较大（包括静态资源），拦截器基于springmvc容器，仅过滤针对controller的请求方法。两者都可以减少代码复用，便于维护。而且Filter是tomcat组件，无法直接获取spring容器。
-
-### Spring和SpringMVC整合
-
-- SpringMVC用来配置网站功能相关，如视图解析器，文件上传解析器，支持Ajax，静态资源处理器
-- Spring用于配置和业务相关，如事务控制，数据源，AOP
-
-整合方式，首先web.xml中通过DispatcherServlet的contextConfigLocation配置spring.mvc.xml，接下来整合Spring
-
-```xml
-<context-param>
-	<param-key>contextConfigLocation</param-key>
-	<param-value>classpath:spring.xml</param-value>
-</context-param>
-<listener>
-    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-</listener>
-```
-
-这些服务器中就启动了两个容器，分别是mvc容器和spring容器。为了分管不同组件，需要配置包扫描不同的组件。
-
- spring-mvc
-
-```xml
-<context:component-scan base-package="com.wsp.controller" use-default-filters="false">
-	<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
-</context:component-scan>
-```
-
-spring
-
-```xml
-<context:component-scan base-package="com.wsp.service">
-	<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
-</context:component-scan>
-```
-
-当服务器中存在两个容器，默认是spring作为springmvc的父容器，即mvc中的controller是可以获取到父容器Spring的bean对象的。

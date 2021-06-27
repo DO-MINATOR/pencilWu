@@ -94,8 +94,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <property name="suffix" value=".jsp"/>
     </bean>
     <!--静态资源解析器-->
-    <mvc:default-servlet-handler/> 
-    <mvc:annotation-driven/> 
+    <mvc:default-servlet-handler/>
 </beans>
 ```
 
@@ -123,7 +122,7 @@ SpringMVC的容器中的 bean 可以来引用 Spring容器中的 bean。反之�
 
 <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
     <property name="basePackage" value="com.wsp.dao"></property>
-</bean><!--将MyBatis自动生成的dao实现类添加到IOC容器中，位于mybatis-spring包下-->
+</bean><!--将dao实现类添加到IOC容器中，位于mybatis-spring包下-->
 
 <bean id="jdbctransactionmanager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
     <property name="dataSource" ref="dataSource"></property>
