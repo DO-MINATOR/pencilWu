@@ -1,11 +1,26 @@
-### 简介
+### tomcat请求流程
 
-包含两大核心组件，Connector和Container，并与编程人员定义的Servlet共同组成Service服务。
+![image-20210702104617367](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210702104617367.png)
 
-- Connector：负责接受Http请求，并分配线程处理这个请求，因此connector必然是多线程的。
-- Container：service容器，Engine>Host>Context>Wrapper，servlet程序就在Wrapper中，context提供了基本运行环境，管理servlet实例，创建、初始化、销毁等，还提供了内置对象如request、pagecontext、session、application 等。
+1. 从socket获取客户端发来的数据，如果采取的是http1.1协议，且长连接打开，则多个请求按序发送到同一个socket。
+2. 解析数据，包含请求行、请求头、请求体，先解析请求行和请求头。
+3. 解析后的字段封装到request中。
+4. 初始化一些参数，如connection的keepalive是否close，以及content-length等。
+5. 将请求交给容器处理，Engine->Host->Context->Wrapper。
+6. 交予具体业务处理器FilterChain->Servlet。
+7. 处理完后调用response进行响应，最终flush缓冲区，将数据发送到socket。
+8. 如果有多个flush，会先检查当此响应是否已经发送了响应行、响应头。
+9. 检查recvbuf中是否还剩余未处理完的请求体，否则处理掉并获取下一个请求行。
 
-其他组件如：Listener、Filter和Servlet共同与两大核心组件提供Service服务。
+### Tomcat架构图
+
+![img](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/1568877624631-47768292-3817-4c05-9694-f892e4777838.png)
+
+一种树状的层级管理结构，组件有父节点和子节点，父节点管理多个子节点。不同节点的数据传输通过Pipeline传输。
+
+### Tomcat响应流程
+
+当调用OutputStream.write()时，首先会将数据写入到stream对应的缓冲区中，当缓冲区满，或者手动调用flush方法。此后，先判断是否发送过响应头，没有则先发送，再调用flush。
 
 ### Tomcat目录
 
