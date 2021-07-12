@@ -3,7 +3,7 @@
 ![image-20210702104617367](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210702104617367.png)
 
 1. 从socket获取客户端发来的数据，如果采取的是http1.1协议，且长连接打开，则多个请求按序发送到同一个socket。
-2. 解析数据，包含请求行、请求头、请求体，先解析请求行和请求头。
+2. connector解析数据，包含请求行、请求头、请求体，先解析请求行和请求头。
 3. 解析后的字段封装到request中。
 4. 初始化一些参数，如connection的keepalive是否close，以及content-length等。
 5. 将请求交给容器处理，Engine->Host->Context->Wrapper。

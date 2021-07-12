@@ -10,7 +10,7 @@
 
 <img src="https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210706104655911.png" alt="image-20210706104655911" style="zoom:50%;" />
 
-将任务Runnable或者Callable提交给线程池去执行，返回的Future可以与当前线程进行互动，Runnable不关心结果如何，而Callable任务会有结果返回。主线程每次发起一个IO请求或者被调用一个IO请求后，不会在调用点等待，而是继续其他任务，直到某一时刻再去检查结果是否返回（可以是等一个通知信号，也可以是循环检查），这仍是同步；如果至始都不再主动处理业务了，而是由回调函数handler自己处理，则是异步。
+将任务Runnable或者Callable提交给线程池去执行，返回的Future可以与当前线程进行互动，Runnable不关心结果如何，而Callable任务会有结果返回。主线程每次发起一个IO请求或者被调用一个IO请求后，不会在调用点等待，而是继续其他任务，直到某一时刻再去检查结果是否返回（可以是等一个通知信号，也可以是循环检查），这仍是同步；如果至始都不再主动处理业务了，而是由回调函数handler发起一个新线程自己处理，则是异步。
 
 ### BIO模型
 
@@ -57,7 +57,7 @@ Channel的双工模式介绍。
 
 文件较小时，BIO效率较高，文件增大时，NIO效率较高。
 
-### NIO非阻塞测试
+### channel+selector实现多路复用
 
 注册到selector，通过监管selector来检查channel状态。
 
@@ -89,10 +89,37 @@ AIO模型是真正的实现了异步处理的机制，调用方发起请求后�
 
 <img src="https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210708203745549.png" alt="image-20210708203745549" style="zoom:67%;" />
 
-将IO请求通过Callable执行，并返回一个Future，此为非阻塞，此后调用Future.get()（该方法是阻塞的），因此总体上来看，该模型还是非阻塞式同步模型。
+将IO请求通过Callable执行，并返回一个Future，此为非阻塞，此后调用Future.get()（该方法是阻塞的），因此总体上来看，该模型还是阻塞式同步模型。
 
 - CompletionHandler
 
 <img src="https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210708204339937.png" alt="image-20210708204339937" style="zoom:67%;" />
 
 这是真正的AIO，发起IO请求的同时，传入一个回调函数，IO完成后调用回调函数进行处理。
+
+<img src="https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210712101743154.png" alt="image-20210712101742870" style="zoom:50%;" />
+
+AIO的底层是通过一个AsyncChannelGroup来管理不同的IO通道，即每次发起一个异步非阻塞的IO请求时，一旦IO事件发生，则启动一个线程来处理该IO，在聊天模型中，服务端发起一个accept请求，之后一旦成功建立连接以后，则内部启动一个线程来执行预先定义好的Handler来处理该IO，返回一个AsyncSocket对应客户端，同样也是非阻塞异步的，read、write方法都可以使用Handler来处理。
+
+### 服务器模型
+
+服务器底层其实也是利用socket进行数据读取和响应，不同的是多了一层应用层协议，常见的比如HTTP服务，就需要解析HTTP请求行、请求头，以及请求体，并将这些封装在ServletRequest中，通过connector逐层传递到具体servlet。
+
+<img src="https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210712171118495.png" alt="image-20210712171118495" style="zoom:50%;" />
+
+- 静态资源
+  - 通常和请求行相关，不应请求体不同而不同
+  - 请求常见资源如HTML、CSS、GIF等
+  - 服务器直接根据资源路径获取文件，并通过socket.getOutputStream获取输出流将数据输出到客户端
+- 动态资源
+  - 请求到达客户端需要进一步解析（后台逻辑业务的处理）得到结果，再返回
+  - 通常以servlet的形式存
+
+在Tomcat中，servlet属于应用层开发人员编写代码，由于也需要用到ServletRequest、ServletResponse等对象，为了避免这部分属于服务器底层的逻辑被外界访问到，在这里使用了一个门面模式(facade)，防止内部逻辑被外界访问。
+
+### 三种模型对比
+
+- BIO：每一个请求都将开启一个新线程，适用于连接数量少，开发、维护较容易，可通过线程池改进
+- NIO：所有请求的channel都被一个selector监控，适用于连接数目多，服务器cpu资源较少，即IO多路复用一个线程，每个请求处理不能花费较多时间，否则其他IO准备好后也无法即使处理。
+- AIO：IO请求好后，通过AsynchronousChannelGroup开启新的handler来处理，适用于连接数目多，由于是多线程模型，所以相较NIO，请求间不会相互影响。
+
