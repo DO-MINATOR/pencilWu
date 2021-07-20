@@ -1,6 +1,6 @@
 ### tomcat请求流程
 
-![image-20210702104617367](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210702104617367.png)
+<img src="https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210702104617367.png" alt="image-20210702104617367" style="zoom:80%;" />
 
 1. 从socket获取客户端发来的数据，如果采取的是http1.1协议，且长连接打开，则多个请求按序发送到同一个socket。
 2. connector解析数据，包含请求行、请求头、请求体，先解析请求行和请求头。
@@ -14,7 +14,7 @@
 
 ### Tomcat架构图
 
-![img](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/1568877624631-47768292-3817-4c05-9694-f892e4777838.png)
+<img src="https://imagebag.oss-cn-chengdu.aliyuncs.com/img/1568877624631-47768292-3817-4c05-9694-f892e4777838.png" alt="img" style="zoom:67%;" />
 
 一种树状的层级管理结构，组件有父节点和子节点，父节点管理多个子节点。不同节点的数据传输通过Pipeline传输。
 

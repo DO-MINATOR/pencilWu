@@ -10,7 +10,7 @@ Tomcat是一个web容器，不同应用可能需要依赖到相同第三方类�
 1. 提供多个加载器负责加载不同context下的类库，并隔离开来。
 2. 同一个web容器下相同的第三方且版本也相同的依赖可以由相同加载器加载，这样可以减小元空间占用。
 3. web容器也有自己依赖的类库，不能与应用类库相混淆，因此单独抽离出一个类加载器。
-4. 需要支持热加载，无论是第三方类库还是servlet的修改，如果发现文件变动，需要启动tomcat的热加载功能，关闭当前context对应的contextClassLoader，重新启动contextClassLoader，加载对应目录下的class文件。
+4. 需要支持热加载，无论是第三方类库还是servlet的修改，如果发现文件变动，需要启动tomcat的热加载功能。
 
 ![image-20210715100911845](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210715100911845.png)
 
@@ -22,9 +22,3 @@ Tomcat是一个web容器，不同应用可能需要依赖到相同第三方类�
 - WebAppClassLoader：每个应用下的每个类库独有的加载器，负责应用间的隔离、热加载。每个class对应一个classloader就是为了方便热加载，这样不会影响到其他类及其对应加载器。
 
 同一个JVM下可存在相同全限定名的class，只要加载器不同，则类也不同，这也是tomcat实现应用类库隔离的原因。
-
-### 热部署和热加载
-
-![image-20210715104920729](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210715104920729.png)
-
-热加载仅会重启个别类加载器，而热部署是将整个context及该容器下的资源全部释放再重启，当然该webapp对应的所有类加载器都会重启。

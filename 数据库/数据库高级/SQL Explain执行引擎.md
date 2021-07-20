@@ -360,17 +360,19 @@ SELECT * FROM employees WHERE name = 1000;
 
 假设联合索引列为`index(a,b,c)`
 
-| where                         | 索引列 |
-| ----------------------------- | ------ |
-| a=3                           | a      |
-| a=3 and b=5                   | a b    |
-| a=3 and b=5 and c=4           | a b c  |
-| b=3                           | /      |
-| b=3 and c=4                   | /      |
-| c=4                           | /      |
-| a=3 and c=5                   | a      |
-| a=3 and b>5 and c=5           | a b    |
-| a=3 and c=3 and b=5           | a b c  |
-| a=3 and b like 'kk%' and c=4  | a b    |
-| a=3 and b like '%kk' and c=4  | a      |
-| a=3 and b like 'k%kk' and c=4 | a b    |
+| where                         | 索引列    |
+| ----------------------------- | --------- |
+| a=3                           | a         |
+| a=3 and b=5                   | a b       |
+| a=3 and b=5 and c=4           | a b c     |
+| b=3                           | /         |
+| b=3 and c=4                   | /         |
+| c=4                           | /         |
+| a=3 and c=5                   | a         |
+| a=3 and b>5 and c=5           | a b       |
+| a=3 and c=3 and b=5           | a b c     |
+| a=3 and b like 'kk%' and c=4  | **a b c** |
+| a=3 and b like '%kk' and c=4  | a         |
+| a=3 and b like 'k%kk' and c=4 | **a b c** |
+
+参加“MySQL索引优化”**索引下推**

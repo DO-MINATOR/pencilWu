@@ -51,7 +51,7 @@
 
 以上这些都做完后，就已经具备处理请求的条件了，只有当请求真正过来后，才会执行相关类库和servlet的加载。
 
-而在第2步中，关闭context，其实就是释放相关资源，清空缓存s，销毁webappClassLoader，之后的工作就交给JDK的GC。
+而在第2步中，关闭context，其实就是释放相关资源，清空缓存，销毁webappClassLoader，之后的工作就交给JDK的GC。
 
 虽然停止+重启看似做法粗暴了些，但其实是最有效的，相比停掉整个Tomcat再重启，可以省去很多环节的重启，包括server.xml中容器的创建部署，connector的创建等。
 
