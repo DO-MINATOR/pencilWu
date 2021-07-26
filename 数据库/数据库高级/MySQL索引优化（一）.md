@@ -359,7 +359,7 @@ age为常量，相当于在指定name和age下根据position进行排序。
 ### Filesort
 
 - 单路排序：一次性取出所有字段，在sort buffer中按照某一条件，执行排序，排序完后的数据即结果。sort_mode信息里显示< sort_key, additional_fields >
-- 双路排序：将排序字段和逐渐id取出来，执行排序，后再回表得到结果集。sort_mode信息里显示< sort_key, rowid >
+- 双路排序：将排序字段和主键id取出来，执行排序，后再回表得到结果集。sort_mode信息里显示< sort_key, rowid >
 
 MySQL 通过比较系统变量 `max_length_for_sort_data`(**默认1KB) 的大小和需要查询的字段总大小来判断使用哪种排序模式。
 
