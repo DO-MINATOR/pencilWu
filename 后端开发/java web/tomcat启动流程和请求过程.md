@@ -10,7 +10,6 @@
 
 ### 启动应用WebApp(Context)
 
-1. 生成一个WebappLoader
 2. 生成WebappClassLoader
 3. 将WEB-INF/classes和WEB-INF/lib目录作为该加载器的加载path，后续应用如果需要用到对应类库，就从该路径下加载。
 4. 解析web.xml
