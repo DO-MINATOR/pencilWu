@@ -433,7 +433,7 @@ public static void main(String[] args) throws ClassNotFoundException {
     Field[] fields = cl.getFields();
     for (Field field : fields) {
         System.out.println(field);
-    }//私有属性
+    }//公有属性
 
     fields = cl.getDeclaredFields();
     for (Field field : fields) {
@@ -533,7 +533,7 @@ class Proxy implements Clothfactory {
     Clothfactory cloth;
 
     public Proxy(Clothfactory cloth) {
-        this.cloth = cloth;java
+        this.cloth = cloth;
     }
 
     @Override
@@ -556,9 +556,6 @@ public class reflect {
     public static void main(String[] args) {
         Clothfactory nike = new Nike();
         Clothfactory instance = (Clothfactory) getInstance(nike);
-        instance.produce();
-        Clothfactory lining = new Lining();
-        instance = (Clothfactory) getInstance(lining);
         instance.produce();
     }
 
@@ -596,19 +593,9 @@ class Nike implements Clothfactory {
         System.out.println("produce nike-cloth");
     }
 }
-
-class Lining implements Clothfactory {
-    @Override
-    public void produce() {
-        System.out.println("produce lining-cloth");
-    }
-}
 /*
 通用方法1
 produce nike-cloth
-通用方法2
-通用方法1
-produce lining-cloth
 通用方法2*/
 ```
 
