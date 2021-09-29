@@ -160,22 +160,33 @@ value是map\<String,Double>，根据权重值进行排序，通过跳表可以�
 - zcount \<key>\<min>\<max>统计该集合，分数区间内的元素个数 
 - zrank \<key>\<value>返回该值在集合中的排名，从0开始。
 
-### 发布订阅
+### 单线程模型
 
-消息通信模式
+是指网络IO和键值对的读写都是一个线程来执行，即redis服务的请求都是需要排队实现的。但其他功能，比如主从同步等都是启动新进程帮助完成的。
 
-- 订阅者：subscribe channel1
-- 发布者：publish channel1 hello
+正是因为所有操作都是在内存中进行的，且都是基于单线程模型，避免了多线程的切换，所以运算速度快，但也要注意避免某一个redis请求过于繁杂，导致整个redis服务卡顿。
 
-### Jedis
+### IO多路复用
 
-java操纵redis的包
+NIO+epoll方式实现IO多路复用。
 
-```java
-Jedis jedis = new Jedis("192.168.137.3",6379);
-String pong = jedis.ping();
-System.out.println("连接成功："+pong);
-```
+![image-20210929104546202](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210929104546202.png)
+
+### 其他高级命令
+
+`keys`：全表（正则）遍历，当redis数据量较大时，避免使用。
+
+![image-20210929104753710](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210929104753710.png)
+
+`scan`：渐进式遍历	SCAN cursor [MATCH pattern] [COUNT count]
+
+第一个是开始遍历的下标值，下次遍历设值为当次遍历完成后的返回值，pattern正则，count为大概需要扫描的key的数量。结果不一定准确，因为新增或者hash扩容。
+
+`info`：查看redis服务器信息。
+
+
+
+
 
 ### 事务
 
@@ -210,107 +221,11 @@ Redis事务是一个单独的隔离操作，事务中的所有命令都会序列
 
 LUA可将复杂的redis操作写为一个脚本，一次性提交给redis执行，减少redis反复连接，同时lua脚本具有一定的原子性，不会被打断，因此可以保证不会超卖和库存遗留问题。
 
-### 持久化
 
-#### RDB
 
-在指定时间间隔内将该部分变动数据及以前数据持久化到磁盘中，持久化时，单独fork一个子进程将数据写入到临时文件中，完毕后在替换。保存位置默认为启动路径。
+- 
 
-恢复机制是在每次启动redis-server时将rdb.dump反序列化。
 
-优势：
-
-1. 适合大规模数据恢复
-2. 节省磁盘空间
-3. 恢复速度快
-
-劣势：
-
-存在数据不完整性，因为是在指定时间段内保存变化的数据。
-
-#### AOF
-
-增量保存，通过日志方式记录变动的数据，恢复时重新执行一边所有变动记录。当AOF文件大小超过一定值时，进行rewrite重写，以缩减容量。
-
-AOF每次持久化时，都会将记录直接追加到文件末尾，只有当进行重写时，才会进行写时复制技术，即fork出新进程，将RDB数据保存到新文件中，在同时追加记录到两个文件中，之后再将新文件替换旧文件，完成容量压缩。
-
-优势：
-
-1. 数据更加完整
-2. 中间的记录过程可以辅助调查
-
-劣势：
-
-1. 占用更多的磁盘空间
-2. 恢复速度较慢
-3. 性能较差
-
-如果二者同时启用，则只会读取AOF文件，因为更加完整。只有当需要快速重启或者时间点保存时，RDB才有用。
-
-写时复制技术有可能导致短暂的响应延迟，因此建议Master采取AOF，Slave采取RDB。
-
-### 主从复制
-
-Master写，Slave读。通过读写分离，实现性能扩展，以及容灾的快速恢复（Salve因为有多个，因此读服务器可以自动完成切换，而Master只有一个，因此主机如果想要实现容灾备份的话，需要集群）
-
-- 创建多个redis-6379.conf、redis-6380.conf、redis-6381.conf
-  - include /redis/redis.conf，引入完整配置
-  - pidfile /var/run/redis_6379.pid
-  - port 6379
-  - dbfilename dump6379.rdb
-- 启动三服务，redis-server redis-6379.conf
-- info replication查看服务器属性
-- slaveof 127.0.0.1 6379，在6380、6381上配置从属信息
-
-#### 一主二仆
-
-- 主动复制：当salve初次连接到master时，会进行主动的全量更新（slave挂掉重启后依然可以完成）
-- 被动传输：在master每次更新数据后，将增量信息主动发送给slave
-
-#### 薪火相传
-
-![image-20210528110151054](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210528110151054.png)
-
-中间的slave既是从机又是主机，后面的从机通过slaveof命令配置中间节点为其master，重新连接时，将进行新的全量更新。
-
-#### 反客为主
-
-slaveof no one，升级为主机，一般在Master断掉后，自选一台Slave晋升为Master，其余Slave连接上该Master。
-
-#### 复制原理
-
-- Slave每次在连接的第一次时，都会发送sync命令给服务器，请求全量更新。
-- 后续的修改操作，Master会发送增量信息给Slave。
-
-### 哨兵模式
-
-反客为主的自动化实现，通过配置哨兵，自动监测Master是否宕机，如果宕机，则按照一定规则选举一台Slave成为Master，之后其余Slave以及重启后的旧的Master将变为Slaves。
-
-- 配置sentinel.conf，添加命令`sentinel monitor mymaster 127.0.0.1 6379 1`，mymaster为哨兵的名称，1为至少需要多少个哨兵同意的数量。
-- 启动是哨兵，`redis-sentinel ./sentinel.conf`
-
-选举规则是通过
-
-1. 优先级选取的，在redis.conf中的replic-priority上配置，数字越低优先级越高
-2. 偏移量越大越好，（获取数据最全的）
-3. runid越小越好，随机生成。
-
-```java
-static Jedis getFromPool() {
-    Set<String> sentinelSet = new HashSet<String>();
-    sentinelSet.add("192.168.137.181:26379");
-    JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-    jedisPoolConfig.setMaxTotal(20);
-    jedisPoolConfig.setBlockWhenExhausted(true);
-    jedisPoolConfig.setMaxWaitMillis(2000);
-    jedisPoolConfig.setTestOnBorrow(true);
-    jedisSentinelPool = new JedisSentinelPool("mymaster", sentinelSet, jedisPoolConfig);
-    Jedis resource = jedisSentinelPool.getResource();
-    return resource;
-}
-```
-
-通过sentinel（哨兵服务）获取jedis连接对象，这样Master挂掉后，又会重新连接上新的Master。
 
 ### 集群
 
