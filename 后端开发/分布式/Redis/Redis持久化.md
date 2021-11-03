@@ -164,6 +164,8 @@ public class JedisSingleTest {
 
 ### 哨兵模式
 
+![image-20210929153922422](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210929153922422.png)
+
 反客为主的自动化实现，通过配置哨兵，自动监测Master是否宕机，如果宕机，则按照一定规则选举一台Slave成为Master，之后其余Slave以及重启后的旧的Master将变为Slaves。
 
 哨兵也是redis服务，但不提供读写功能，主要用来监控redis实例节点。

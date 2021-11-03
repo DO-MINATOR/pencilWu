@@ -204,7 +204,7 @@ Redis事务是一个单独的隔离操作，事务中的所有命令都会序列
 
 但是不同事务中的命令有可能会冲突，例如对同一个value进行增减操作。
 
-由此引出锁机制
+可通过lua脚本，创建出一个事务环境，lua脚本执行具有原子性。
 
 ### 乐观/悲观锁
 
@@ -218,109 +218,6 @@ Redis事务是一个单独的隔离操作，事务中的所有命令都会序列
 - 连接超时，使用连接池
 - 超卖问题，使用乐观锁
 - 乐观锁导致的库存遗留，通过循环或者lua脚本
-
-LUA可将复杂的redis操作写为一个脚本，一次性提交给redis执行，减少redis反复连接，同时lua脚本具有一定的原子性，不会被打断，因此可以保证不会超卖和库存遗留问题。
-
-
-
-- 
-
-
-
-### 集群
-
-解决生产环境中的容量、写操作压力分担。通过无中心化集群，在连接集群服务时，可自动将请求打在不同服务器上。
-
-- 水平扩容，如果有N个Master，则每个Master负责总数据量1/N的业务量。
-- 分区备份，Master和对应的Slave会分配在不同的IP下，防止整个挂掉。
-
-这里以6个服务为例，6379、6380、6381、6389、6390、6391。
-
-redis-6379.conf
-
-```conf
-include /redis/redis.conf
-port 6379
-pidfile "/var/run/redis_6379.pid"
-dbfilename "dump6379.rdb"
-cluster-enabled yes
-cluster-config-file nodes-6379.conf
-cluster-node-timeout 15000
-```
-
-redis-server启动6个服务后，再通过集群方式进行管理。在redis安装目录下通过
-
-`redis-cli --cluster create --cluster-replicas 1 192.168.224.1:6379 192.168.224.1:6380 192.168.224.1:6381 192.168.224.1:6389 192.168.224.1:6390 192.168.224.1:6391`
-
-![image-20210531152608541](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210531152609585.png)
-
-客户端连接方式如果采用以前的单点登录，则会发生操作转移，因此建议使用集群登录命令，`redis-cli -c -p 6379`，这样，如果遇到数据需要在别的机器上进行写操作时，则会自动切换到对应主机。
-
-#### 插槽Slot
-
-一个 Redis 集群包含 16384 个插槽（hash slot）， 数据库中的每个键都属于这 16384 个插槽的其中一个， 集群使用公式 CRC16(key) % 16384 来计算键 key 属于哪个槽。每个slot可能发生“hash”冲突。
-
-```txt
-cluster keyslot cust //返回key cust所在的slot号
-cluster countkeysinslot 4847 //返回4847号slot中拥有的keys的数量
-cluster getkeysinslot 4847 10 //返回4847号slot中10个key
-```
-
-**注意：**上述命令需要slot段对应的节点上(Master/Slave)执行才有效
-
-#### 故障恢复
-
-如果Master挂掉后，对应的Slave会自动晋升为Master，原来的Master恢复后，自动变为Slave。如果某一段slot的Master和Slave都挂掉后，会根据cluster-require-full-coverage对应的配置是否为yes决定集群服务是否还能运行，如果还能运行，则当前数据段无法工作。
-
-#### Jedis集群
-
-```java
-@Test
-public void test01() {
-    HostAndPort hostAndPort = new HostAndPort("192.168.137.181", 6379);//任意节点都可
-    JedisCluster jedisCluster = new JedisCluster(hostAndPort);
-    String k1 = jedisCluster.get("k1");
-    System.out.println(k1);
-}
-```
-
-无中心化集群连接方式。
-
-### 其他问题
-
-#### 缓存穿透
-
-大量（非法）请求打在服务端上，先查看redis缓存发现没有数据，则数据库压力增大。
-
-解决方案：
-
-- 布隆过滤器，限制请求，阻断在服务器外。
-- 设置空值，先将数据返回，再及时更新redis，防止不一致情况。
-- 数据预热。
-
-![image-20210531165535710](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210531165535710.png)
-
-将数据通过若干hash函数映射到一维数组空间，增加和查询时间复杂度为O(K)，k为hash函数个数，如果查询到有一个不为1，则一定不存在，如果全为1，则有可能存在，原因在于hash冲突。减少hash冲突的方法是增加hash函数个数和一维数组长度，这在redis集成的布隆过滤器中可通过参数配置。
-
-#### 缓存击穿
-
-针对极个别热点数据，突然某一个时刻该缓存过期，导致大量线程访问数据库。
-
-解决方案：
-
-- 根据监控延长热点数据TTL
-- 设置多级缓存，变相增加缓存有效时间
-- 分布式锁，限制单个key的访问只能有一个线程去查数据库，结果缓存后释放锁。
-
-#### 缓存雪崩
-
-大量热点数据同一时间失效，导致大量请求访问到数据库。
-
-解决方案：
-
-- 异地多活，部署集群，扩容、减负
-- 限流降级，关闭其他不相关服务，同时针对热点数据访问进行降级，比如只有一个线程访问数据库，之后立即缓存。
-- 设置随机过期时间，尽量让这些热点数据不在同一时刻过期。
 
 ### 分布式锁
 
@@ -381,36 +278,5 @@ public String deduckStock() {
 
 另外，之前谈到的不一致问题在于Redis如果是主从架构的话，如果在Master收到锁命令后还没来得及向从服务器发送写命令就导致宕机切换的话，会导致这次上锁失败。可以考虑zookeeper一类拥有更强一致性的分布式框架。
 
-另外，由于之前设置的是针对同一个库存设置一把锁，单线程模型会降低并发访问性能，因此提出分段锁的概念，可以进一步提高性能。
 
-### 其他
-
-#### ACL用户权限控制
-
-`acl list`查看当前用户权限
-
-![image-20210605092930210](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210605092930210.png)
-
-`acl setuser user1`创建user1
-
-![image-20210605093039749](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210605093039749.png)
-
-`acl setuser user2 on >password ~cached:* +get`创建并启用user2，设置密码，赋予get权限（需要key中含有cached字符串）
-
-![image-20210605093228202](https://imagebag.oss-cn-chengdu.aliyuncs.com/img/image-20210605093228202.png)
-
-#### IO线程复用
-
-Redis 的多线程部分只是用来处理网络数据的读写和协议解析，执行命令仍然是单线程。之所以这么设计是不想因为多线程而变得复杂，需要去控制 key、事务，LPUSH/LPOP 等等的并发问题。
-
-另外，多线程IO默认也是不开启的，需要再配置文件中配置
-
-```config
-io-threads-do-reads yes 
-io-threads 4
-```
-
-#### 内部支持cluster
-
-之前老版Redis想要搭集群需要单独安装ruby环境，Redis 5 将 redis-trib.rb 的功能集成到 redis-cli。另外官方 redis-benchmark 工具开始支持 cluster 模式了，通过多线程的方式对多个分片进行压测。可直接启动集群。
 
