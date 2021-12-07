@@ -1,4 +1,4 @@
-### MySQL组件架构
+###  MySQL组件架构
 
 <img src="https://imagebag.oss-cn-chengdu.aliyuncs.com/img/12570" alt="dsa" style="zoom:80%;" />
 
